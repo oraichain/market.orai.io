@@ -1,11 +1,11 @@
 import React from 'react';
-import { Link } from "umi";
+
 export const NavDataSource = {
   wrapper: { className: 'header0 home-page-wrapper' },
   page: { className: 'home-page' },
   logo: {
     className: 'header0-logo',
-    children: '/images/favicon.png'
+    children: '/images/favicon.png',
   },
   Menu: {
     className: 'header0-menu',
@@ -45,7 +45,7 @@ export const NavDataSource = {
                   name: 'content',
                   className: 'item-content',
                   children: 'Testnet',
-                  href: "https://scan.orai.io/"
+                  href: 'https://scan.orai.io/',
                 },
               ],
             },
@@ -60,7 +60,7 @@ export const NavDataSource = {
                   name: 'content',
                   className: 'item-content',
                   children: 'Yield Farming',
-                  href: 'https://yield.orai.io/'
+                  href: 'https://yai.finance/',
                 },
               ],
             },
@@ -85,7 +85,7 @@ export const NavDataSource = {
                   name: 'content',
                   className: 'item-content',
                   children: 'Seed Sale',
-                  href: 'https://medium.com/oraichain/guideline-for-orai-seed-sale-c23a903c89c5'
+                  href: 'https://medium.com/oraichain/guideline-for-orai-seed-sale-c23a903c89c5',
                 },
               ],
             },
@@ -100,7 +100,7 @@ export const NavDataSource = {
                   name: 'content',
                   className: 'item-content',
                   children: 'Token Economics',
-                  href: 'https://orai.io/economics'
+                  href: 'https://orai.io/economics',
                 },
               ],
             },
@@ -125,7 +125,7 @@ export const NavDataSource = {
                   name: 'content',
                   className: 'item-content',
                   children: 'Team',
-                  href: 'https://orai.io/#team'
+                  href: 'https://orai.io/#team',
                 },
               ],
             },
@@ -140,7 +140,7 @@ export const NavDataSource = {
                   name: 'content',
                   className: 'item-content',
                   children: 'Road map',
-                  href: 'https://orai.io/roadmap'
+                  href: 'https://orai.io/roadmap',
                 },
               ],
             },
@@ -155,7 +155,7 @@ export const NavDataSource = {
                   name: 'content',
                   className: 'item-content',
                   children: 'Community',
-                  href: 'https://t.me/oraichain_official'
+                  href: 'https://t.me/oraichain_official',
                 },
               ],
             },
@@ -200,46 +200,38 @@ export const Footer10DataSource = {
         childWrapper: {
           children: [
             { name: 'link0', href: 'mailto:contact@orai.io', children: 'contact@orai.io' },
-            { 
-              name: 'link1', 
+            {
+              name: 'link1',
               children: (
                 <span>
-                  <p>
-                    Technical Support
-                  </p>
+                  <p>Technical Support</p>
                 </span>
-              ), 
+              ),
             },
             { name: 'link2', href: 'mailto:support@orai.io', children: 'support@orai.io' },
-            { 
-              name: 'link3', 
+            {
+              name: 'link3',
               children: (
                 <span>
-                  <p>
-                  We can be mailed at:
-                  </p>
+                  <p>We can be mailed at:</p>
                 </span>
-              ), 
+              ),
             },
-            { 
-              name: 'link4', 
+            {
+              name: 'link4',
               children: (
                 <span>
-                  <p>
-                  Oraichain Pte. Ltd.
-                  </p>
+                  <p>Oraichain Pte. Ltd.</p>
                 </span>
-              ), 
+              ),
             },
-            { 
-              name: 'link5', 
+            {
+              name: 'link5',
               children: (
                 <span>
-                  <p>
-                  68 Circular Road, #02-01, 049422, Singapore
-                  </p>
+                  <p>68 Circular Road, #02-01, 049422, Singapore</p>
                 </span>
-              ), 
+              ),
             },
           ],
         },
@@ -265,9 +257,9 @@ export const Footer10DataSource = {
         title: { children: 'Company' },
         childWrapper: {
           children: [
-            { href: '#', name: 'link0', children: 'Partners' },
-            { href: '#', name: 'link1', children: 'Investors' },
-            { href: '#', name: 'link2', children: 'FAQ' },
+            { href: 'https://t.me/oraichain', name: 'link0', children: 'Community' },
+            // { href: '#', name: 'link1', children: 'Investors' },
+            { href: 'https://gov.orai.io/c/knowledge-base/7', name: 'link2', children: 'FAQ' },
           ],
         },
       },
@@ -278,11 +270,13 @@ export const Footer10DataSource = {
   copyright: {
     className: 'copyright',
     children: [
-      <img src="/images/favicon.png" width="60"  />,
-      <div style={{
-        width: "100%"
-      }}>
-        <a 
+      <img src="/images/favicon.png" width="60" alt="logo" />,
+      <div
+        style={{
+          width: '100%',
+        }}
+      >
+        <a
           href="https://orai.io/"
           style={{
             fontSize: 25,
@@ -295,10 +289,12 @@ export const Footer10DataSource = {
         <span>
           ©2020 <a href="https://orai.io/">Oraichain Pte. Ltd.</a> All rights reserved.
         </span>
-        <span style={{
-          float: "right"
-        }}>
-          <a href="#" style={{marginRight: 10}}>
+        <span
+          style={{
+            float: 'right',
+          }}
+        >
+          {/* <a href="#" style={{marginRight: 10}}>
             Privacy Policy
           </a>
           <a href="#" style={{marginRight: 10}}>
@@ -306,9 +302,9 @@ export const Footer10DataSource = {
           </a>
           <a href="#" style={{marginRight: 10}}>
             Careers
-          </a>
+          </a> */}
         </span>
       </div>,
-    ]
+    ],
   },
 };
