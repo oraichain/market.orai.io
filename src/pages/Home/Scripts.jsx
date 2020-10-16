@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { List, Pagination } from "antd";
-import { Link } from "umi";
+import { List, Pagination, Button, Modal, Form, Input, InputNumber, notification } from "antd";
 import { UserOutlined, CheckCircleTwoTone } from "@ant-design/icons";
 import styles from "./Scripts.less";
 import { connect } from "dva";
@@ -9,11 +8,14 @@ class Scripts extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            currentPage: 1
+            currentPage: 1,
+            visible: false,
+            currentScript: null,
+            result: null
         }
     }
 
-    componentDidMount(){
+    componentDidMount() {
         const { dispatch } = this.props
         dispatch({
             type: "market/fetch",
@@ -24,9 +26,39 @@ class Scripts extends Component {
         })
     }
 
+    tryOut = async (values) => {
+        const { dispatch } = this.props;
+        const { currentScript } = this.state;
+        const { price, expected_price, fees } = values;
+        const res = (await dispatch({
+            type: "market/tryOut",
+            payload: {
+                currency_type: currentScript.slice(8),
+                price: btoa(price),
+                expected_price: btoa(expected_price),
+                fees,
+            }
+        })).data
+        if(res.message === "You have successfully signed and broadcast your tx"){
+            this.setState({
+                result: res.results[0]
+            })
+        }
+        else if(res.message === "The given fee is smaller / equal to the required fee or the oracle script does not exist. Provided fees should at least be higher"){
+            notification.error({
+                message: `Fees must be greater than ${res.required_fee}`
+            })
+        }
+        else{
+            notification.error({
+                message: `An error occurred`
+            })
+        }
+    }
+
     render() {
-        const { scripts, loading, total, pageSize, dispatch } = this.props
-        const { currentPage } = this.state
+        const { scripts, loading, total, pageSize, dispatch, trying } = this.props
+        const { currentPage, visible, currentScript, result } = this.state
         return (
             <div className={styles.container}>
                 <div className={styles.wrapper}>
@@ -45,9 +77,9 @@ class Scripts extends Component {
                             xl: 3,
                             xxl: 3,
                         }}
-                        style={loading? {
+                        style={loading ? {
                             minHeight: "60vh"
-                        }:{}}
+                        } : {}}
                         dataSource={scripts}
                         renderItem={item => {
                             return (
@@ -70,6 +102,27 @@ class Scripts extends Component {
                                                     twoToneColor="rgb(82, 196, 26)" style={{ fontSize: 25 }} />
                                             </a>
                                         </div>
+                                        <Button
+                                            style={{
+                                                width: "100%",
+                                                height: 60,
+                                                border: "1px solid #e0dada",
+                                                borderRadius: 10,
+                                                padding: 15,
+                                                backgroundColor: "#1890ff",
+                                                outlineColor: "#1890ff",
+                                                color: "white",
+                                                fontSize: 16,
+                                                margin: "0 auto",
+                                                marginTop: 10,
+                                            }}
+                                            onClick={() => this.setState({
+                                                visible: true,
+                                                currentScript: item.name
+                                            })}
+                                        >
+                                            Try it out
+                                        </Button>
                                     </div>
                                 </List.Item>
                             );
@@ -118,14 +171,144 @@ class Scripts extends Component {
                         />
                     </div> */}
                 </div>
+                <Modal
+                    title="Oracle script"
+                    visible={visible}
+                    footer={null}
+                    onCancel={() => this.setState({ 
+                        visible: false,
+                        result: null
+                     })}
+                >
+                    <div>
+                        <Form 
+                            onFinish={this.tryOut}
+                            initialValues={{
+                                price: 0,
+                                expected_price: 0,
+                                fees: 0
+                            }}
+                        >
+                            <div style={{
+                                marginBottom: 10,
+                            }}>
+                                Price:
+                            </div>
+                            <Form.Item
+                                name="price"
+                            >
+                                <InputNumber 
+                                    style={{
+                                        width: "100%",
+                                    }} 
+                                    min={0}
+                                />
+                            </Form.Item>
+                            <div style={{
+                                marginTop: 10,
+                                marginBottom: 10,
+                            }}>
+                                Expected price:
+                            </div>
+                            <Form.Item
+                                name="expected_price"
+                            >
+                                <InputNumber 
+                                    style={{
+                                        width: "100%",
+                                    }} 
+                                    min={0}
+                                />
+                            </Form.Item>
+                            <div style={{
+                                marginTop: 10,
+                                marginBottom: 10,
+                            }}>
+                                Fees:
+                            </div>
+                            <Form.Item
+                                name="fees"
+                            >
+                                <InputNumber 
+                                    style={{
+                                        width: "100%",
+                                    }} 
+                                    min={0}
+                                />
+                            </Form.Item>
+                            <div
+                                style={{
+                                    width: "100%",
+                                    display: "flex"
+                                }}
+                            >
+                                <Button
+                                    htmlType="submit"
+                                    style={{
+                                        margin: "0 auto",
+                                        width: 200,
+                                        padding: 10,
+                                        height: 50,
+                                        borderRadius: 10,
+                                        border: "1px solid #e0dada",
+                                        backgroundColor: "#1890ff",
+                                        outlineColor: "#1890ff",
+                                        color: "white",
+                                    }}
+                                    loading={trying}
+                                >
+                                    Try it out
+                                </Button>
+                            </div>
+                            {
+                                result && 
+                                <div style={{
+                                    marginTop: 20
+                                }}>
+                                    <div style={{display: "flex", padding: "5px 0"}}>
+                                        <div style={{width: 128}}>Request Id:</div> 
+                                        <div>
+                                            {result.requestId}
+                                        </div>
+                                    </div>
+                                    <div style={{display: "flex", padding: "5px 0"}}>
+                                        <div style={{width: 128}}>Validator Address:</div> 
+                                        <div>
+                                            {result.validatorAddrs[0]}
+                                        </div>
+                                    </div>
+                                    <div style={{display: "flex", padding: "5px 0"}}>
+                                        <div style={{width: 128}}>Block Height:</div> 
+                                        <div>
+                                            {result.blockHeight}
+                                        </div>
+                                    </div>
+                                    <div style={{display: "flex", padding: "5px 0"}}>
+                                        <div style={{width: 128}}>Aggregated Prices:</div> 
+                                        <div>
+                                            {atob(result.aggregatedPrices[0])}
+                                        </div>
+                                    </div>
+                                    <div style={{display: "flex", padding: "5px 0"}}>
+                                        <div style={{width: 128}}>Request Status:</div> 
+                                        <div>
+                                            {result.requestStatus}
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </Form>
+                    </div>
+                </Modal>
             </div>
         )
     }
 }
 
-export default connect(({ market, loading })=>({
+export default connect(({ market, loading }) => ({
     scripts: market.scripts,
     loading: loading.effects["market/fetch"],
+    trying: loading.effects["market/tryOut"],
     total: market.total,
     pageSize: market.pageSize,
 }))(Scripts)
