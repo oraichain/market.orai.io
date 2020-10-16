@@ -26,6 +26,10 @@ export default defineConfig({
   routes: [
     {
       path: '/',
+      redirect: "/oscript"
+    },
+    {
+      path: '/oscript',
       component: './Home',
     },
     {

@@ -1,4 +1,4 @@
-import { fetch } from '@/services/market';
+import { fetch, tryOut } from '@/services/market';
 const UserModel = {
     namespace: 'market',
     state: {
@@ -17,6 +17,14 @@ const UserModel = {
                 type: "saveTotal",
                 payload: response.result.oracle_scripts.length
             })
+        },
+        *tryOut({ payload }, { call, put }) {
+            try {
+                const response = yield call(tryOut, payload)
+                return response;
+            } catch (error) {
+                return error
+            }
         },
     },
     reducers: {

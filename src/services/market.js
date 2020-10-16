@@ -1,7 +1,8 @@
 import request from '@/utils/request';
 const queryString = require('query-string');
 import axios from "axios"
-import { URL } from "../../config/constant"
+import { URL, TRY_URL } from "../../config/constant"
+
 export async function fetch(page, limit) {
     const query = {}
     if(page) query.page = page
@@ -15,3 +16,12 @@ export async function fetch(page, limit) {
     return axios(config)
 }
 
+export async function tryOut(payload) {
+  var config = {
+      method: 'post',
+      url: `${TRY_URL}/api/txs/req_price`,
+      data: payload
+    };
+    
+  return axios(config)
+}
