@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { List, Pagination, Button, Modal, Form, Input, InputNumber, notification } from "antd";
-import { UserOutlined, CheckCircleTwoTone } from "@ant-design/icons";
+import { UserOutlined, CheckCircleTwoTone, CopyOutlined } from "@ant-design/icons";
 import styles from "./Scripts.less";
 import { connect } from "dva";
 
@@ -11,7 +11,8 @@ class Scripts extends Component {
             currentPage: 1,
             visible: false,
             currentScript: null,
-            result: null
+            result: null,
+            tx_hash: null
         }
     }
 
@@ -41,7 +42,8 @@ class Scripts extends Component {
         })).data
         if(res.message === "You have successfully signed and broadcast your tx"){
             this.setState({
-                result: res.results[0]
+                result: res.results[0],
+                tx_hash: res.tx_hash
             })
         }
         else if(res.message === "The given fee is smaller / equal to the required fee or the oracle script does not exist. Provided fees should at least be higher"){
@@ -56,9 +58,42 @@ class Scripts extends Component {
         }
     }
 
+    copyTextToClipboard = () => {
+        var textArea = window.document.createElement('textarea');
+        textArea.style.position = 'fixed';
+        textArea.style.top = 0;
+        textArea.style.left = 0;
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = 0;
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        textArea.value = this.state.tx_hash;
+        window.document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            var successful = window.document.execCommand('copy');
+            var msg = successful ? 'successful' : 'unsuccessful';
+            if (msg === 'successful') notification.success({
+                message: 'Copy was ' + msg,
+            });
+            else notification.error({
+                message: 'Copy was ' + msg,
+            });
+        } catch (err) {
+            alert('Oops, unable to copy');
+        }
+
+        window.document.body.removeChild(textArea);
+    };
+
     render() {
         const { scripts, loading, total, pageSize, dispatch, trying } = this.props
-        const { currentPage, visible, currentScript, result } = this.state
+        const { currentPage, visible, currentScript, result, tx_hash } = this.state
+        console.log(tx_hash)
         return (
             <div className={styles.container}>
                 <div className={styles.wrapper}>
@@ -177,7 +212,7 @@ class Scripts extends Component {
                     footer={null}
                     onCancel={() => this.setState({ 
                         visible: false,
-                        result: null
+                        result: null,
                      })}
                 >
                     <div>
@@ -265,6 +300,21 @@ class Scripts extends Component {
                                 <div style={{
                                     marginTop: 20
                                 }}>
+                                    <div style={{display: "flex", padding: "5px 0"}}>
+                                        <div style={{width: 128}}>Transaction Hash:</div> 
+                                        <div>
+                                            {tx_hash.slice(0,25)}... 
+                                            <CopyOutlined
+                                                onClick={() => this.copyTextToClipboard()}
+                                                style={{
+                                                    marginLeft: 10,
+                                                    cursor: 'pointer',
+                                                    fontSize: 20,
+                                                }}
+                                                title="Copy"
+                                            />
+                                        </div>
+                                    </div>
                                     <div style={{display: "flex", padding: "5px 0"}}>
                                         <div style={{width: 128}}>Request Id:</div> 
                                         <div>
