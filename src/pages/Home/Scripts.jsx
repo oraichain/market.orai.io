@@ -219,9 +219,9 @@ class Scripts extends Component {
                         <Form 
                             onFinish={this.tryOut}
                             initialValues={{
-                                price: 0,
-                                expected_price: 0,
-                                fees: 0
+                                price: 5000,
+                                expected_price: 5000,
+                                fees: 50000
                             }}
                         >
                             <div style={{
