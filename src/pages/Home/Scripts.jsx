@@ -34,7 +34,7 @@ class Scripts extends Component {
         const res = (await dispatch({
             type: "market/tryOut",
             payload: {
-                currency_type: currentScript.slice(8),
+                oscript_name: currentScript,
                 price: btoa(price),
                 expected_price: btoa(expected_price),
                 fees,
