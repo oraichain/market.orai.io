@@ -38,6 +38,7 @@ class Scripts extends Component {
                 price: btoa(price),
                 expected_price: btoa(expected_price),
                 fees,
+                validator_count:2
             }
         })).data
         if(res.message === "You have successfully signed and broadcast your tx"){
@@ -221,7 +222,7 @@ class Scripts extends Component {
                             initialValues={{
                                 price: 5000,
                                 expected_price: 5000,
-                                fees: 50000
+                                fees: 500000
                             }}
                         >
                             <div style={{
@@ -336,7 +337,8 @@ class Scripts extends Component {
                                     <div style={{display: "flex", padding: "5px 0"}}>
                                         <div style={{width: 128}}>Aggregated Prices:</div> 
                                         <div>
-                                            {atob(result.aggregatedPrices[0])}
+                                            {/* {result} */}
+                                            {atob(result.aggregatedPrices[0].result)}
                                         </div>
                                     </div>
                                     <div style={{display: "flex", padding: "5px 0"}}>
