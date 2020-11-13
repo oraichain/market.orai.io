@@ -94,7 +94,6 @@ class Scripts extends Component {
     render() {
         const { scripts, loading, total, pageSize, dispatch, trying } = this.props
         const { currentPage, visible, currentScript, result, tx_hash } = this.state
-        console.log(tx_hash)
         return (
             <div className={styles.container}>
                 <div className={styles.wrapper}>
@@ -325,7 +324,7 @@ class Scripts extends Component {
                                     <div style={{display: "flex", padding: "5px 0"}}>
                                         <div style={{width: 128}}>Validator Address:</div> 
                                         <div>
-                                            {result.validatorAddrs[0]}
+                                            {result.aggregatedPrices[0].value.validator_address}
                                         </div>
                                     </div>
                                     <div style={{display: "flex", padding: "5px 0"}}>
@@ -338,7 +337,7 @@ class Scripts extends Component {
                                         <div style={{width: 128}}>Aggregated Prices:</div> 
                                         <div>
                                             {/* {result} */}
-                                            {atob(result.aggregatedPrices[0].result)}
+                                            {atob(result.aggregatedPrices[0].value.result)}
                                         </div>
                                     </div>
                                     <div style={{display: "flex", padding: "5px 0"}}>

@@ -19,7 +19,7 @@ export async function fetch(page, limit) {
 export async function tryOut(payload) {
   var config = {
       method: 'post',
-      url: `${TRY_URL}/api/txs/req_price`,
+      url: `${TRY_URL}/api/v1/txs/req_price`,
       data: payload
     };
     
