@@ -12,16 +12,42 @@ export async function fetch(page, limit) {
         method: 'get',
         url: url
       };
-      
+
     return axios(config)
 }
 
-export async function tryOut(payload) {
+export async function priceRequest(payload) {
   var config = {
       method: 'post',
       url: `${TRY_URL}/api/v1/txs/req_price`,
       data: payload
     };
-    
+
+  return axios(config)
+}
+
+export async function classification(payload) {
+  var config = {
+      method: 'post',
+      url: `${TRY_URL}/api/v1/txs/img_classification`,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      data: payload
+    };
+
+  return axios(config)
+}
+
+export async function ocr(payload) {
+  var config = {
+      method: 'post',
+      url: `${TRY_URL}/api/v1/txs/img_ocr`,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      data: payload
+    };
+
   return axios(config)
 }
