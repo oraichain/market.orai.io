@@ -397,7 +397,7 @@ class Scripts extends Component {
                     marginBottom: 10,
                   }}>
                     Expected output :{" "}
-                          <Tooltip title="the label you expect after the AI services run your image ">
+                          <Tooltip title="The label you expect after the AI services run your image ">
                               <InfoCircleTwoTone style={{fontSize: 15}} />
                           </Tooltip>
                   </div>
@@ -424,7 +424,7 @@ class Scripts extends Component {
                     marginBottom: 10,
                   }}>
                     Fees:{" "}
-                          <Tooltip title="the total fees you have to spend to execute the oracle script">
+                          <Tooltip title="The total fees you have to spend to execute the oracle script">
                               <InfoCircleTwoTone style={{fontSize: 15}} />
                           </Tooltip>
                   </div>
@@ -449,7 +449,7 @@ class Scripts extends Component {
                     marginBottom: 10,
                   }}>
                     Validator count:{" "}
-                          <Tooltip title="the number of validators that execute the oracle scripts">
+                          <Tooltip title="The number of validators that execute the oracle scripts">
                               <InfoCircleTwoTone style={{fontSize: 15}} />
                           </Tooltip>
                   </div>
@@ -473,7 +473,7 @@ class Scripts extends Component {
                     marginBottom: 10,
                   }}>
                     Image:{" "}
-                          <Tooltip title="the image you want to classify">
+                          <Tooltip title="The image you want to classify">
                               <InfoCircleTwoTone style={{fontSize: 15}} />
                           </Tooltip>
                   </div>
@@ -695,7 +695,7 @@ class Scripts extends Component {
                     marginBottom: 10,
                   }}>
                     Fees:{" "}
-                          <Tooltip title="the total fees you have to spend to execute the oracle script">
+                          <Tooltip title="The total fees you have to spend to execute the oracle script">
                               <InfoCircleTwoTone style={{fontSize: 15}} />
                           </Tooltip>
                   </div>
@@ -720,7 +720,7 @@ class Scripts extends Component {
                     marginBottom: 10,
                   }}>
                     Validator count:{" "}
-                          <Tooltip title="the number of validators that execute the oracle scripts">
+                          <Tooltip title="The number of validators that execute the oracle scripts">
                               <InfoCircleTwoTone style={{fontSize: 15}} />
                           </Tooltip>
                   </div>
