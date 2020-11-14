@@ -1,4 +1,4 @@
-import { fetch, tryOut } from '@/services/market';
+import { fetch, priceRequest, classification, ocr } from '@/services/market';
 const UserModel = {
     namespace: 'market',
     state: {
@@ -18,9 +18,25 @@ const UserModel = {
                 payload: response.result.oracle_scripts.length
             })
         },
-        *tryOut({ payload }, { call, put }) {
+        *priceRequest({ payload }, { call, put }) {
             try {
-                const response = yield call(tryOut, payload)
+                const response = yield call(priceRequest, payload)
+                return response;
+            } catch (error) {
+                return error
+            }
+        },
+        *classification({ payload }, { call, put }) {
+            try {
+                const response = yield call(classification, payload)
+                return response;
+            } catch (error) {
+                return error
+            }
+        },
+      *ocr({ payload }, { call, put }) {
+            try {
+                const response = yield call(ocr, payload)
                 return response;
             } catch (error) {
                 return error
