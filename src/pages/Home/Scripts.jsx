@@ -149,6 +149,7 @@ class Scripts extends Component {
         payload: {
           oscript_name: currentScript,
           expected_price: btoa(expected_price),
+          price: btoa("50000"),
           fees,
           validator_count
         }
@@ -203,7 +204,7 @@ class Scripts extends Component {
   };
 
   render() {
-    const {scripts, loading, dispatch, requestLoading, classificationLoading, ocrLoading} = this.props;
+    const {scripts, loading, dispatch, requestLoading, classificationLoading, ocrLoading, classificationHashLoading, ocrHashLoading} = this.props;
     const {visible, currentScript, result, tx_hash, file, isDefault, defaultImage} = this.state;
     const props = {
       accept: "image/*",
@@ -211,7 +212,6 @@ class Scripts extends Component {
       name: 'file',
       onChange: info => {
         if (info.file.status === 'done') {
-          console.log(info.file)
           if (!info.file.type.includes("image/")) {
             notification.error({
               message: "Please upload image"
@@ -258,7 +258,7 @@ class Scripts extends Component {
                 <List.Item style={{borderRadius: 10}}>
                   <div className={styles.card}>
                     <div className={styles.block}>
-                      <span className={styles.title}>Name</span>: {item.name}
+                      <span className={styles.title}>Name</span>: {item.name} ({["oscript_btc", "oscript_eth"].includes(item.name) ? "Price API" : "AI API"})
                     </div>
                     <div className={styles.block} style={{height: 75}}>
                       <span className={styles.title}>Name</span>: {item.description}
@@ -323,11 +323,14 @@ class Scripts extends Component {
                     validator_count: 2
                   }}
                 >
-                  <div style={{
+                  {
+                    currentScript !== "oscript_ocr" &&
+                      <>
+                        <div style={{
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Expected output <InfoCircleTwoTone style={{fontSize: 12}}
+                    Expected output <InfoCircleTwoTone style={{fontSize: 15}}
                                                        title={"the label you expect after the AI services run your image "}/>:
                   </div>
                   <Form.Item
@@ -346,11 +349,13 @@ class Scripts extends Component {
                       min={0}
                     />
                   </Form.Item>
+                      </>
+                  }
                   <div style={{
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Fees <InfoCircleTwoTone style={{fontSize: 12}}
+                    Fees <InfoCircleTwoTone style={{fontSize: 15}}
                                             title={"the total fees you have to spend to execute the oracle script"}/>:
                   </div>
                   <Form.Item
@@ -373,7 +378,7 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Validator count <InfoCircleTwoTone style={{fontSize: 12}}
+                    Validator count <InfoCircleTwoTone style={{fontSize: 15}}
                                                        title={" the number of validators that execute the oracle scripts"}/>:
                   </div>
                   <Form.Item
@@ -395,7 +400,7 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Image <InfoCircleTwoTone style={{fontSize: 12}} title={"the image you want to classify"}/>:
+                    Image <InfoCircleTwoTone style={{fontSize: 15}} title={"the image you want to classify"}/>:
                   </div>
                   <div style={{
                     marginTop: 10,
@@ -517,7 +522,7 @@ class Scripts extends Component {
                         outlineColor: "#1890ff",
                         color: "white",
                       }}
-                      loading={currentScript === "oscript_classification" ? classificationLoading : ocrLoading}
+                      loading={["oscript_classification", "oscript_classification_v2"].includes(currentScript) ? (isDefault? classificationHashLoading: classificationLoading) : (isDefault? ocrHashLoading:ocrLoading)}
                     >
                       Try it out
                     </Button>
@@ -593,7 +598,7 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Expected price <InfoCircleTwoTone style={{fontSize: 12}}
+                    Expected price <InfoCircleTwoTone style={{fontSize: 15}}
                                                       title={"The approximate price you expect to receive from this cryptocurrency"}/>:
                   </div>
                   <Form.Item
@@ -616,7 +621,7 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Fees <InfoCircleTwoTone style={{fontSize: 12}}
+                    Fees <InfoCircleTwoTone style={{fontSize: 15}}
                                             title={"the total fees you have to spend to execute the oracle script"}/>:
                   </div>
                   <Form.Item
@@ -639,7 +644,7 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Validator count <InfoCircleTwoTone style={{fontSize: 12}}
+                    Validator count <InfoCircleTwoTone style={{fontSize: 15}}
                                                        title={" the number of validators that execute the oracle scripts"}/>:
                   </div>
                   <Form.Item
@@ -751,6 +756,8 @@ export default connect(({market, loading}) => ({
   requestLoading: loading.effects["market/priceRequest"],
   classificationLoading: loading.effects["market/classification"],
   ocrLoading: loading.effects["market/ocr"],
+  classificationHashLoading: loading.effects["market/classificationHash"],
+  ocrHashLoading: loading.effects["market/ocrHash"],
   total: market.total,
   pageSize: market.pageSize,
 }))(Scripts)
