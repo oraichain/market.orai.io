@@ -415,6 +415,8 @@ class Scripts extends Component {
                   ref={this.classificationForm}
                   onFinish={this.tryOut}
                   initialValues={{
+                    price: 50000,
+                    expected_price: 17000,
                     expected_output: "great_white_shark",
                     fees: 120000,
                     validator_count: 2
@@ -754,6 +756,7 @@ class Scripts extends Component {
                   initialValues={{
                     price: 50000,
                     expected_price: 17000,
+                    expected_output: "great_white_shark",
                     fees: 500000,
                     validator_count: 2
                   }}
