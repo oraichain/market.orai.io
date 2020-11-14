@@ -33,6 +33,22 @@ const defaultImages = {
   },
   }
 
+  const ocrList = {
+    "0": {
+      "image_hash": "QmRBkP87C9x9HGtZDL2RDF3baXXLY4uJBv7A2HZuaZufHa",
+      "image_name": "a.jpg"
+    },
+    "1": {
+      "image_hash": "QmcVyP9d4Dr3DDoQF9rDCE7Eh46zS49fMfXbEhAe9Fwxn8",
+      "image_name": "a.jpg"
+    },
+    "2": {
+      "image_hash": "QmRdv74LPufdquq5TZkMuwZbtNK9PB1JpYEZrwcTs94Vsx",
+      "image_name": "a.jpg"
+    },
+
+  }
+
 const columns = [
   {
     title: 'Validator address',
@@ -58,6 +74,8 @@ class Scripts extends Component {
       file: null,
       isDefault: true,
       defaultImage: "great_white_shark",
+      handling: false,
+      defaultOcr: "0"
     }
   }
 
@@ -78,7 +96,7 @@ class Scripts extends Component {
 
   tryOut = async (values) => {
     const {dispatch} = this.props;
-    const {currentScript, file, isDefault, defaultImage} = this.state;
+    const {currentScript, file, isDefault, defaultImage, defaultOcr} = this.state;
     const {expected_price, fees, validator_count, expected_output} = values;
     if (["oscript_classification", "oscript_ocr", "oscript_classification_v2"].includes(currentScript)) {
       if (!isDefault) {
@@ -109,6 +127,10 @@ class Scripts extends Component {
           notification.error({
             message: `Fees must be greater than ${res.required_fee}`
           })
+        } else if(res.message === "The requests are still being handled on Oraichain. Please check them later using the transaction hash"){
+           this.setState({
+             handling: true
+           })
         } else {
           notification.error({
             message: res.message
@@ -121,8 +143,8 @@ class Scripts extends Component {
           "input": btoa("asdas"),
           "fees": fees,
           "validator_count": validator_count,
-          "image_hash": defaultImages[defaultImage].image_hash,
-          "image_name": defaultImages[defaultImage].image_name
+          "image_hash": currentScript === "oscript_ocr"?ocrList[defaultOcr].image_hash:defaultImages[defaultImage].image_hash,
+          "image_name": currentScript === "oscript_ocr"?ocrList[defaultOcr].image_name:defaultImages[defaultImage].image_name
         }
         const res = (await dispatch({
           type: currentScript === "oscript_ocr" ? "market/ocrHash" : "market/classificationHash",
@@ -137,6 +159,10 @@ class Scripts extends Component {
           notification.error({
             message: `Fees must be greater than ${res.required_fee}`
           })
+        } else if(res.message === "The requests are still being handled on Oraichain. Please check them later using the transaction hash"){
+           this.setState({
+             handling: true
+           })
         } else {
           notification.error({
             message: res.message
@@ -163,6 +189,10 @@ class Scripts extends Component {
         notification.error({
           message: `Fees must be greater than ${res.required_fee}`
         })
+      } else if(res.message === "The requests are still being handled on Oraichain. Please check them later using the transaction hash"){
+          this.setState({
+             handling: true
+           })
       } else {
         notification.error({
           message: `An error occurred`
@@ -205,7 +235,7 @@ class Scripts extends Component {
 
   render() {
     const {scripts, loading, dispatch, requestLoading, classificationLoading, ocrLoading, classificationHashLoading, ocrHashLoading} = this.props;
-    const {visible, currentScript, result, tx_hash, file, isDefault, defaultImage} = this.state;
+    const {visible, currentScript, result, tx_hash, file, isDefault, defaultImage, handling, defaultOcr} = this.state;
     const props = {
       accept: "image/*",
       multiple: false,
@@ -374,6 +404,7 @@ class Scripts extends Component {
           onCancel={() => this.setState({
             visible: false,
             result: null,
+            handling: false
           })}
           width={1000}
         >
@@ -481,12 +512,13 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Use default image <Switch checked={!isDefault}
+                    Use example image <Switch checked={!isDefault}
                                               onChange={checked => this.setState({isDefault: !checked})}/> Upload image
                   </div>
                   {
                     isDefault ?
-                      <div style={{
+                      (currentScript !== "oscript_ocr")?
+                        <div style={{
                         marginTop: 10,
                         marginBottom: 10,
                         display: "flex"
@@ -564,6 +596,57 @@ class Scripts extends Component {
                           />
                         </div>
                       </div>
+                        :<div style={{
+                        marginTop: 10,
+                        marginBottom: 10,
+                        display: "flex"
+                      }}>
+                        <div
+                          onClick={() => {
+                            this.setState({defaultOcr: "0"})
+                          }}
+                          style={{
+                            border: defaultOcr === "0" ? "3px solid blue" : "3px solid white",
+                            marginRight: 20
+                          }}
+                        >
+                          <img
+                            src={"/images/ocr0.jpg"}
+                            width={150}
+                            height={150}
+                          />
+                        </div>
+                        <div
+                          onClick={() => {
+                            this.setState({defaultOcr: "1"})
+                          }}
+                          style={{
+                            border: defaultOcr === "1" ? "3px solid blue" : "3px solid white",
+                            marginRight: 20
+                          }}
+                        >
+                          <img
+                            src={"/images/ocr1.jpg"}
+                            width={150}
+                            height={150}
+                          />
+                        </div>
+                        <div
+                          onClick={() => {
+                            this.setState({defaultOcr: "2"})
+                          }}
+                          style={{
+                            border: defaultOcr === "2" ? "3px solid blue" : "3px solid white",
+                            marginRight: 20
+                          }}
+                        >
+                          <img
+                            src={"/images/ocr2.jpg"}
+                            width={150}
+                            height={150}
+                          />
+                        </div>
+                      </div>
                       : <Upload {...props}>
                         <Button
                           style={{
@@ -602,6 +685,16 @@ class Scripts extends Component {
                       Try it out
                     </Button>
                   </div>
+                  {
+                    handling &&
+                      <div style={{
+                        marginTop: 20
+                      }}>
+                        <div style={{padding: "5px 0"}}>
+                          The requests are still being handled on Oraichain. Please check them later using the transaction hash
+                        </div>
+                      </div>
+                  }
                   {
                     result &&
                     <div style={{
@@ -763,6 +856,16 @@ class Scripts extends Component {
                       Try it out
                     </Button>
                   </div>
+                  {
+                    handling &&
+                      <div style={{
+                        marginTop: 20
+                      }}>
+                        <div style={{padding: "5px 0"}}>
+                          The requests are still being handled on Oraichain. Please check them later using the transaction hash
+                        </div>
+                      </div>
+                  }
                   {
                     result &&
                     <div style={{
