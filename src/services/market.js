@@ -51,3 +51,23 @@ export async function ocr(payload) {
 
   return axios(config)
 }
+
+export async function classificationHash(payload) {
+  var config = {
+      method: 'post',
+      url: `${TRY_URL}/api/v1/txs/img_classification_hash`,
+      data: payload
+    };
+
+  return axios(config)
+}
+
+export async function ocrHash(payload) {
+  var config = {
+      method: 'post',
+      url: `${TRY_URL}/api/v1/txs/img_ocr_hash`,
+      data: payload
+    };
+
+  return axios(config)
+}
