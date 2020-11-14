@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {List, Table, Button, Modal, Form, Input, InputNumber, Select, Upload, notification, Switch} from "antd";
+import {List, Table, Button, Modal, Form, Input, InputNumber, Select, Upload, notification, Switch, Tooltip} from "antd";
 import {UserOutlined, CheckCircleTwoTone, CopyOutlined, InfoCircleTwoTone} from "@ant-design/icons";
 import styles from "./Scripts.less";
 import {connect} from "dva";
@@ -235,7 +235,7 @@ class Scripts extends Component {
       <div className={styles.container}>
         <div className={styles.wrapper}>
           <div className={styles.script}>
-            Oracle scripts
+            Oracle price scripts
           </div>
           <List
             rowKey="id"
@@ -252,13 +252,79 @@ class Scripts extends Component {
             style={loading ? {
               minHeight: "60vh"
             } : {}}
-            dataSource={scripts}
+            dataSource={scripts.filter(item=>["oscript_btc", "oscript_eth"].includes(item.name))}
             renderItem={item => {
               return (
                 <List.Item style={{borderRadius: 10}}>
                   <div className={styles.card}>
                     <div className={styles.block}>
-                      <span className={styles.title}>Name</span>: {item.name} ({["oscript_btc", "oscript_eth"].includes(item.name) ? "Price API" : "AI API"})
+                      <span className={styles.title}>Name</span>: {item.name}
+                    </div>
+                    <div className={styles.block} style={{height: 75}}>
+                      <span className={styles.title}>Name</span>: {item.description}
+                    </div>
+                    <div className={styles.action}>
+                      <a href={`https://scan.orai.io/account/${item.owner}`} target="_blank">
+                        <UserOutlined style={{fontSize: 25}} className={styles.button} title="Owner"/>
+                      </a>
+                      <a href="#">
+                        <CheckCircleTwoTone
+                          className={styles.button}
+                          title="Transaction id"
+                          twoToneColor="rgb(82, 196, 26)" style={{fontSize: 25}}/>
+                      </a>
+                    </div>
+                    <Button
+                      style={{
+                        width: "100%",
+                        height: 60,
+                        border: "1px solid #e0dada",
+                        borderRadius: 10,
+                        padding: 15,
+                        backgroundColor: "#1890ff",
+                        outlineColor: "#1890ff",
+                        color: "white",
+                        fontSize: 16,
+                        margin: "0 auto",
+                        marginTop: 10,
+                      }}
+                      onClick={() => this.setState({
+                        visible: true,
+                        currentScript: item.name
+                      })}
+                    >
+                      Try it out
+                    </Button>
+                  </div>
+                </List.Item>
+              );
+            }}
+          />
+          <div className={styles.script}>
+            Oracle AI scripts
+          </div>
+          <List
+            rowKey="id1"
+            loading={loading}
+            grid={{
+              gutter: 24,
+              xs: 1,
+              sm: 2,
+              md: 3,
+              lg: 3,
+              xl: 3,
+              xxl: 3,
+            }}
+            style={loading ? {
+              minHeight: "60vh"
+            } : {}}
+            dataSource={scripts.filter(item=>!(["oscript_btc", "oscript_eth"].includes(item.name)))}
+            renderItem={item => {
+              return (
+                <List.Item style={{borderRadius: 10}}>
+                  <div className={styles.card}>
+                    <div className={styles.block}>
+                      <span className={styles.title}>Name</span>: {item.name}
                     </div>
                     <div className={styles.block} style={{height: 75}}>
                       <span className={styles.title}>Name</span>: {item.description}
@@ -330,8 +396,10 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Expected output <InfoCircleTwoTone style={{fontSize: 15}}
-                                                       title={"the label you expect after the AI services run your image "}/>:
+                    Expected output :{" "}
+                          <Tooltip title="the label you expect after the AI services run your image ">
+                              <InfoCircleTwoTone style={{fontSize: 15}} />
+                          </Tooltip>
                   </div>
                   <Form.Item
                     name="expected_output"
@@ -355,8 +423,10 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Fees <InfoCircleTwoTone style={{fontSize: 15}}
-                                            title={"the total fees you have to spend to execute the oracle script"}/>:
+                    Fees:{" "}
+                          <Tooltip title="the total fees you have to spend to execute the oracle script">
+                              <InfoCircleTwoTone style={{fontSize: 15}} />
+                          </Tooltip>
                   </div>
                   <Form.Item
                     name="fees"
@@ -378,8 +448,10 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Validator count <InfoCircleTwoTone style={{fontSize: 15}}
-                                                       title={" the number of validators that execute the oracle scripts"}/>:
+                    Validator count:{" "}
+                          <Tooltip title="the number of validators that execute the oracle scripts">
+                              <InfoCircleTwoTone style={{fontSize: 15}} />
+                          </Tooltip>
                   </div>
                   <Form.Item
                     name="validator_count"
@@ -400,7 +472,10 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Image <InfoCircleTwoTone style={{fontSize: 15}} title={"the image you want to classify"}/>:
+                    Image:{" "}
+                          <Tooltip title="the image you want to classify">
+                              <InfoCircleTwoTone style={{fontSize: 15}} />
+                          </Tooltip>
                   </div>
                   <div style={{
                     marginTop: 10,
@@ -572,11 +647,7 @@ class Scripts extends Component {
                         <div style={{width: 128}}>Aggregated:</div>
                         <div>
                           {
-                            result.aggregatedPrices.filter(i => isNaN(atob(i.value.result))).length > 0
-                              ? ""
-                              : (result.aggregatedPrices.reduce((a, b) => {
-                              return a + parseFloat(atob(b.value.result))
-                            }, 0)) / result.aggregatedPrices.length
+                            atob(result.aggregatedPrices[0].value.result)
                           }
                         </div>
                       </div>
@@ -589,7 +660,7 @@ class Scripts extends Component {
                   ref={this.form}
                   initialValues={{
                     price: 50000,
-                    expected_price: 50000,
+                    expected_price: 17000,
                     fees: 500000,
                     validator_count: 2
                   }}
@@ -598,8 +669,10 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Expected price <InfoCircleTwoTone style={{fontSize: 15}}
-                                                      title={"The approximate price you expect to receive from this cryptocurrency"}/>:
+                    Expected price:{" "}
+                          <Tooltip title="The approximate price you expect to receive from this cryptocurrency">
+                              <InfoCircleTwoTone style={{fontSize: 15}} />
+                          </Tooltip>
                   </div>
                   <Form.Item
                     name="expected_price"
@@ -621,8 +694,10 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Fees <InfoCircleTwoTone style={{fontSize: 15}}
-                                            title={"the total fees you have to spend to execute the oracle script"}/>:
+                    Fees:{" "}
+                          <Tooltip title="the total fees you have to spend to execute the oracle script">
+                              <InfoCircleTwoTone style={{fontSize: 15}} />
+                          </Tooltip>
                   </div>
                   <Form.Item
                     name="fees"
@@ -644,8 +719,10 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Validator count <InfoCircleTwoTone style={{fontSize: 15}}
-                                                       title={" the number of validators that execute the oracle scripts"}/>:
+                    Validator count:{" "}
+                          <Tooltip title="the number of validators that execute the oracle scripts">
+                              <InfoCircleTwoTone style={{fontSize: 15}} />
+                          </Tooltip>
                   </div>
                   <Form.Item
                     name="validator_count"
@@ -732,7 +809,7 @@ class Scripts extends Component {
                         <div>
                           {
                             result.aggregatedPrices.filter(i => isNaN(atob(i.value.result))).length > 0
-                              ? ""
+                              ? atob(result.aggregatedPrices[0].value.result)
                               : (result.aggregatedPrices.reduce((a, b) => {
                               return a + parseFloat(atob(b.value.result))
                             }, 0)) / result.aggregatedPrices.length
