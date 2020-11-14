@@ -1,10 +1,37 @@
 import React, {Component} from "react";
-import {List, Table, Button, Modal, Form, Input, InputNumber, Select, Upload, notification} from "antd";
-import {UserOutlined, CheckCircleTwoTone, CopyOutlined} from "@ant-design/icons";
+import {List, Table, Button, Modal, Form, Input, InputNumber, Select, Upload, notification, Switch} from "antd";
+import {UserOutlined, CheckCircleTwoTone, CopyOutlined, InfoCircleTwoTone} from "@ant-design/icons";
 import styles from "./Scripts.less";
 import {connect} from "dva";
 
 const {Option} = Select;
+
+const defaultImages = {
+  "goldfish": {
+    "image_hash": "QmX1LNNUzmvskEBKpy4F76xQRbw47dp9eDM6Ppi3Qyk25N",
+    "image_name": "a.jpg",
+    "label": "goldfish",
+    "expected_output": "Z29sZGZpc2g="
+  },
+  "great_white_shark": {
+    "image_hash": "QmUwX5mCSopqV883PpoWuE21w38JciB3RCrVbuKR7tH5Ai",
+    "image_name": "a.jpg",
+    "label": "great_white_shark",
+    "expected_output": "Z3JlYXRfd2hpdGVfc2hhcms="
+  },
+  "tree_frog": {
+    "image_hash": "QmVqiHB2xdgoL3vv5bzhvHgRVPmRPjFQn7DQ67fN4C7Sqx",
+    "image_name": "a.jpg",
+    "label": "tree_frog",
+    "expected_output": "dHJlZV9mcm9n"
+  },
+  "Samoyed": {
+    "image_hash": "QmZqMFADQqLiK1PH1Afp3V9C1SghUi6DmdMKJp1JMDPTmi",
+    "image_name": "a.jpg",
+    "label": "Samoyed",
+    "expected_output": "U2Ftb3llZA=="
+  },
+  }
 
 const columns = [
   {
@@ -28,9 +55,15 @@ class Scripts extends Component {
       currentScript: null,
       result: null,
       tx_hash: null,
-      file: null
+      file: null,
+      isDefault: true,
+      defaultImage: "great_white_shark",
     }
   }
+
+  form = React.createRef();
+
+  classificationForm = React.createRef();
 
   componentDidMount() {
     const {dispatch} = this.props
@@ -45,47 +78,76 @@ class Scripts extends Component {
 
   tryOut = async (values) => {
     const {dispatch} = this.props;
-    const {currentScript, file} = this.state;
-    const {price, expected_price, fees, validator_count, input, expected_output} = values;
-    if (["oscript_classification", "oscript_ocr"].includes(currentScript)) {
-      if(!file) {
-        notification.error({
-          message: "Please upload image"
-        });
-        return;
-      }
-      const payload = new FormData();
-      payload.append("oscript_name", currentScript);
-      payload.append("image", file[file.length-1].originFileObj);
-      payload.append("input", btoa(input));
-      payload.append("expected_output", btoa(expected_output));
-      payload.append("fees", fees);
-      payload.append("validator_count", validator_count);
+    const {currentScript, file, isDefault, defaultImage} = this.state;
+    const {expected_price, fees, validator_count, expected_output} = values;
+    if (["oscript_classification", "oscript_ocr", "oscript_classification_v2"].includes(currentScript)) {
+      if (!isDefault) {
+        if (!file) {
+          notification.error({
+            message: "Please upload image"
+          });
+          return;
+        }
+        const payload = new FormData();
+        payload.append("oscript_name", currentScript);
+        payload.append("input", btoa("asdas"));
+        payload.append("image", file[file.length - 1].originFileObj);
+        payload.append("expected_output", btoa(expected_output));
+        payload.append("fees", fees);
+        payload.append("validator_count", validator_count);
 
-      const res = (await dispatch({
-        type: currentScript === "oscript_classification"? "market/classification": "market/ocr",
-        payload
-      })).data
-      if (res.message === "You have successfully signed and broadcast your tx") {
-        this.setState({
-          result: res.results[0],
-          tx_hash: res.tx_hash
-        })
-      } else if (res.message === "The given fee is smaller / equal to the required fee or the oracle script does not exist. Provided fees should at least be higher") {
-        notification.error({
-          message: `Fees must be greater than ${res.required_fee}`
-        })
+        const res = (await dispatch({
+          type: currentScript === "oscript_ocr" ? "market/ocr" : "market/classification",
+          payload
+        })).data
+        if (res.message === "You have successfully signed and broadcast your tx") {
+          this.setState({
+            result: res.results[0],
+            tx_hash: res.tx_hash
+          })
+        } else if (res.message === "The given fee is smaller / equal to the required fee or the oracle script does not exist. Provided fees should at least be higher") {
+          notification.error({
+            message: `Fees must be greater than ${res.required_fee}`
+          })
+        } else {
+          notification.error({
+            message: res.message
+          })
+        }
       } else {
-        notification.error({
-          message: res.message
-        })
+        const payload = {
+          "oscript_name": currentScript,
+          "expected_output": btoa(expected_output),
+          "input": btoa("asdas"),
+          "fees": fees,
+          "validator_count": validator_count,
+          "image_hash": defaultImages[defaultImage].image_hash,
+          "image_name": defaultImages[defaultImage].image_name
+        }
+        const res = (await dispatch({
+          type: currentScript === "oscript_ocr" ? "market/ocrHash" : "market/classificationHash",
+          payload
+        })).data
+        if (res.message === "You have successfully signed and broadcast your tx") {
+          this.setState({
+            result: res.results[0],
+            tx_hash: res.tx_hash
+          })
+        } else if (res.message === "The given fee is smaller / equal to the required fee or the oracle script does not exist. Provided fees should at least be higher") {
+          notification.error({
+            message: `Fees must be greater than ${res.required_fee}`
+          })
+        } else {
+          notification.error({
+            message: res.message
+          })
+        }
       }
     } else {
       const res = (await dispatch({
         type: "market/priceRequest",
         payload: {
           oscript_name: currentScript,
-          price: btoa(price),
           expected_price: btoa(expected_price),
           fees,
           validator_count
@@ -141,15 +203,16 @@ class Scripts extends Component {
   };
 
   render() {
-    const {scripts, loading, total, pageSize, dispatch, requestLoading, classificationLoading, ocrLoading} = this.props;
-    const {currentPage, visible, currentScript, result, tx_hash, file} = this.state;
+    const {scripts, loading, dispatch, requestLoading, classificationLoading, ocrLoading} = this.props;
+    const {visible, currentScript, result, tx_hash, file, isDefault, defaultImage} = this.state;
     const props = {
       accept: "image/*",
       multiple: false,
       name: 'file',
       onChange: info => {
         if (info.file.status === 'done') {
-          if(!info.file.type.includes("image/")){
+          console.log(info.file)
+          if (!info.file.type.includes("image/")) {
             notification.error({
               message: "Please upload image"
             })
@@ -158,10 +221,10 @@ class Scripts extends Component {
           this.setState({file: info.fileList})
         }
       },
-      fileList: file?[file[file.length-1]]: []
+      fileList: file ? [file[file.length - 1]] : []
     };
     const dataSource = [];
-    if(result) result.aggregatedPrices.forEach((item, idx) => {
+    if (result) result.aggregatedPrices.forEach((item, idx) => {
       dataSource.push({
         key: idx,
         address: item.value.validator_address,
@@ -237,51 +300,9 @@ class Scripts extends Component {
               );
             }}
           />
-          {/* <div
-                        style={{
-                            textAlign: 'center',
-                            marginBottom: 20,
-                        }}
-                    >
-                        <Pagination
-                            showSizeChanger={true}
-                            current={currentPage}
-                            size="large"
-                            pageSizeOptions={['3', '6', '9', '12']}
-                            // onChange={page => {
-                            //     console.log(pageSize)
-                            //     console.log(page)
-                            //     this.setState({ currentPage: page });
-                            //     dispatch({
-                            //         type: 'market/fetch',
-                            //         payload: {
-                            //             limit: pageSize,
-                            //             page
-                            //         },
-                            //     });
-                            // }}
-                            onShowSizeChange={(_, size) => {
-                                console.log(_)
-                                console.log(size)
-                                dispatch({
-                                    type: 'market/savePageSize',
-                                    payload: size,
-                                });
-                                dispatch({
-                                    type: 'market/fetch',
-                                    payload: {
-                                        limit: size,
-                                        page: currentPage
-                                    },
-                                });
-                            }}
-                            total={total}
-                            pageSize={pageSize}
-                        />
-                    </div> */}
         </div>
         <Modal
-          title="Oracle script"
+          title={`Oracle script (${currentScript})`}
           visible={visible}
           footer={null}
           onCancel={() => this.setState({
@@ -292,41 +313,22 @@ class Scripts extends Component {
         >
           <div>
             {
-               (["oscript_classification", "oscript_ocr"].includes(currentScript)) ?
+              (["oscript_classification", "oscript_ocr", "oscript_classification_v2"].includes(currentScript)) ?
                 <Form
+                  ref={this.classificationForm}
                   onFinish={this.tryOut}
                   initialValues={{
-                    input: "",
-                    expected_output: "",
+                    expected_output: "great_white_shark",
                     fees: 120000,
                     validator_count: 2
                   }}
                 >
                   <div style={{
-                    marginBottom: 10,
-                  }}>
-                    Input:
-                  </div>
-                  <Form.Item
-                    name="input"
-                    rules={[
-                      {
-                        required: true,
-                        message: 'Please fill your input!',
-                      },
-                    ]}
-                  >
-                    <Input
-                      style={{
-                        width: "100%",
-                      }}
-                    />
-                  </Form.Item>
-                  <div style={{
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Expected output:
+                    Expected output <InfoCircleTwoTone style={{fontSize: 12}}
+                                                       title={"the label you expect after the AI services run your image "}/>:
                   </div>
                   <Form.Item
                     name="expected_output"
@@ -348,7 +350,8 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Fees:
+                    Fees <InfoCircleTwoTone style={{fontSize: 12}}
+                                            title={"the total fees you have to spend to execute the oracle script"}/>:
                   </div>
                   <Form.Item
                     name="fees"
@@ -366,6 +369,13 @@ class Scripts extends Component {
                       min={0}
                     />
                   </Form.Item>
+                  <div style={{
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}>
+                    Validator count <InfoCircleTwoTone style={{fontSize: 12}}
+                                                       title={" the number of validators that execute the oracle scripts"}/>:
+                  </div>
                   <Form.Item
                     name="validator_count"
                   >
@@ -381,13 +391,117 @@ class Scripts extends Component {
                       </Option>
                     </Select>
                   </Form.Item>
-                  <Upload {...props}>
-                    <Button>Click to upload image</Button>
-                  </Upload>
+                  <div style={{
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}>
+                    Image <InfoCircleTwoTone style={{fontSize: 12}} title={"the image you want to classify"}/>:
+                  </div>
+                  <div style={{
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}>
+                    Use default image <Switch checked={!isDefault}
+                                              onChange={checked => this.setState({isDefault: !checked})}/> Upload image
+                  </div>
+                  {
+                    isDefault ?
+                      <div style={{
+                        marginTop: 10,
+                        marginBottom: 10,
+                        display: "flex"
+                      }}>
+                        <div
+                          onClick={() => {
+                            this.setState({defaultImage: "tree_frog"})
+                            this.classificationForm.current.setFieldsValue({
+                              expected_output: "tree_frog"
+                            })
+                          }}
+                          style={{
+                            border: defaultImage === "tree_frog" ? "3px solid blue" : "3px solid white",
+                            marginRight: 20
+                          }}
+                        >
+                          <img
+                            src={"/images/tree_frog.jpg"}
+                            width={150}
+                            height={150}
+                          />
+                        </div>
+                        <div
+                          onClick={() => {
+                            this.setState({defaultImage: "great_white_shark"})
+                            this.classificationForm.current.setFieldsValue({
+                              expected_output: "great_white_shark"
+                            })
+                          }}
+                          style={{
+                            border: defaultImage === "great_white_shark" ? "3px solid blue" : "3px solid white",
+                            marginRight: 20
+                          }}
+                        >
+                          <img
+                            src={"/images/great_white_shark.jpg"}
+                            width={150}
+                            height={150}
+                          />
+                        </div>
+                        <div
+                          onClick={() => {
+                            this.setState({defaultImage: "goldfish"})
+                            this.classificationForm.current.setFieldsValue({
+                              expected_output: "goldfish"
+                            })
+                          }}
+                          style={{
+                            border: defaultImage === "goldfish" ? "3px solid blue" : "3px solid white",
+                            marginRight: 20
+                          }}
+                        >
+                          <img
+                            src={"/images/goldfish.jpg"}
+                            width={150}
+                            height={150}
+                          />
+                        </div>
+                        <div
+                          onClick={() => {
+                            this.setState({defaultImage: "Samoyed"})
+                            this.classificationForm.current.setFieldsValue({
+                              expected_output: "Samoyed"
+                            })
+                          }}
+                          style={{
+                            border: defaultImage === "Samoyed" ? "3px solid blue" : "3px solid white",
+                            marginRight: 20
+                          }}
+                        >
+                          <img
+                            src={"/images/Samoyed.jpg"}
+                            width={150}
+                            height={150}
+                          />
+                        </div>
+                      </div>
+                      : <Upload {...props}>
+                        <Button
+                          style={{
+                            padding: 10,
+                            height: 50,
+                            border: "1px solid #e0dada",
+                            backgroundColor: "#1890ff",
+                            outlineColor: "#1890ff",
+                            color: "white",
+                          }}
+                        >Click to upload image</Button>
+                      </Upload>
+                  }
                   <div
                     style={{
                       width: "100%",
-                      display: "flex"
+                      display: "flex",
+                      marginTop: 10
                     }}
                   >
                     <Button
@@ -434,6 +548,15 @@ class Scripts extends Component {
                           {result.requestId}
                         </div>
                       </div>
+                      <div style={{display: "flex", padding: "5px 0"}}>
+                        <div style={{width: 128}}>Request Status:</div>
+                        <div>
+                          {result.requestStatus}
+                        </div>
+                      </div>
+                      <div style={{padding: "5px 0"}}>
+                        <div style={{width: 128}}>Aggregated detail:</div>
+                      </div>
                       <Table
                         columns={columns}
                         dataSource={dataSource}
@@ -441,21 +564,15 @@ class Scripts extends Component {
                         bordered={true}
                       />
                       <div style={{display: "flex", padding: "5px 0"}}>
-                        <div style={{width: 128}}>Aggregated Prices:</div>
+                        <div style={{width: 128}}>Aggregated:</div>
                         <div>
                           {
-                            result.aggregatedPrices.filter(i=>isNaN(atob(i.value.result))).length > 0
-                            ? ""
-                              :result.aggregatedPrices.reduce((a,b)=>{
+                            result.aggregatedPrices.filter(i => isNaN(atob(i.value.result))).length > 0
+                              ? ""
+                              : (result.aggregatedPrices.reduce((a, b) => {
                               return a + parseFloat(atob(b.value.result))
-                              }, 0)
+                            }, 0)) / result.aggregatedPrices.length
                           }
-                        </div>
-                      </div>
-                      <div style={{display: "flex", padding: "5px 0"}}>
-                        <div style={{width: 128}}>Request Status:</div>
-                        <div>
-                          {result.requestStatus}
                         </div>
                       </div>
                     </div>
@@ -464,6 +581,7 @@ class Scripts extends Component {
                 :
                 <Form
                   onFinish={this.tryOut}
+                  ref={this.form}
                   initialValues={{
                     price: 50000,
                     expected_price: 50000,
@@ -472,31 +590,11 @@ class Scripts extends Component {
                   }}
                 >
                   <div style={{
-                    marginBottom: 10,
-                  }}>
-                    Price:
-                  </div>
-                  <Form.Item
-                    name="price"
-                    rules={[
-                      {
-                        required: true,
-                        message: 'Please fill your price!',
-                      },
-                    ]}
-                  >
-                    <InputNumber
-                      style={{
-                        width: "100%",
-                      }}
-                      min={0}
-                    />
-                  </Form.Item>
-                  <div style={{
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Expected price:
+                    Expected price <InfoCircleTwoTone style={{fontSize: 12}}
+                                                      title={"The approximate price you expect to receive from this cryptocurrency"}/>:
                   </div>
                   <Form.Item
                     name="expected_price"
@@ -518,7 +616,8 @@ class Scripts extends Component {
                     marginTop: 10,
                     marginBottom: 10,
                   }}>
-                    Fees:
+                    Fees <InfoCircleTwoTone style={{fontSize: 12}}
+                                            title={"the total fees you have to spend to execute the oracle script"}/>:
                   </div>
                   <Form.Item
                     name="fees"
@@ -536,6 +635,13 @@ class Scripts extends Component {
                       min={0}
                     />
                   </Form.Item>
+                  <div style={{
+                    marginTop: 10,
+                    marginBottom: 10,
+                  }}>
+                    Validator count <InfoCircleTwoTone style={{fontSize: 12}}
+                                                       title={" the number of validators that execute the oracle scripts"}/>:
+                  </div>
                   <Form.Item
                     name="validator_count"
                   >
@@ -601,6 +707,15 @@ class Scripts extends Component {
                           {result.requestId}
                         </div>
                       </div>
+                      <div style={{display: "flex", padding: "5px 0"}}>
+                        <div style={{width: 128}}>Request Status:</div>
+                        <div>
+                          {result.requestStatus}
+                        </div>
+                      </div>
+                      <div style={{padding: "5px 0"}}>
+                        <div style={{width: 128}}>Aggregated detail:</div>
+                      </div>
                       <Table
                         columns={columns}
                         dataSource={dataSource}
@@ -608,21 +723,15 @@ class Scripts extends Component {
                         bordered={true}
                       />
                       <div style={{display: "flex", padding: "5px 0"}}>
-                        <div style={{width: 128}}>Aggregated Prices:</div>
+                        <div style={{width: 128}}>Aggregated:</div>
                         <div>
                           {
-                            result.aggregatedPrices.filter(i=>isNaN(atob(i.value.result))).length > 0
-                            ? ""
-                              :result.aggregatedPrices.reduce((a,b)=>{
+                            result.aggregatedPrices.filter(i => isNaN(atob(i.value.result))).length > 0
+                              ? ""
+                              : (result.aggregatedPrices.reduce((a, b) => {
                               return a + parseFloat(atob(b.value.result))
-                              }, 0)
+                            }, 0)) / result.aggregatedPrices.length
                           }
-                        </div>
-                      </div>
-                      <div style={{display: "flex", padding: "5px 0"}}>
-                        <div style={{width: 128}}>Request Status:</div>
-                        <div>
-                          {result.requestStatus}
                         </div>
                       </div>
                     </div>
