@@ -335,7 +335,7 @@ class Scripts extends Component {
     return (
       <div className={styles.container}>
         <div className={styles.wrapper}>
-          <div className={styles.script}>Oracle AI scripts</div>
+          <div className={styles.script}>AI Oracle scripts</div>
           <List
             rowKey="id1"
             loading={loading}
@@ -417,7 +417,7 @@ class Scripts extends Component {
               );
             }}
           />
-          <div className={styles.script}>Oracle price scripts</div>
+          <div className={styles.script}>Prices Oracle scripts</div>
           <List
             rowKey="id"
             loading={loading}
