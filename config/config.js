@@ -26,7 +26,7 @@ export default defineConfig({
   routes: [
     {
       path: '/',
-      redirect: "/oscript"
+      redirect: '/oscript',
     },
     {
       path: '/oscript',
