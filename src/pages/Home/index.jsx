@@ -428,19 +428,6 @@ class Market extends React.Component {
                 ))}
               </Row>
             </div>
-            <div className={styles.block}>
-              <div className={styles.header}>
-                <div className={styles.title}>Hot pick today</div>
-                <img src={expandSVG} />
-              </div>
-              <Row grid={[20, 20]}>
-                {scripts.map((script, idx) => (
-                  <Col span={8} key={idx}>
-                    <Card name={script.name} description={script.description} tryIt={this.tryIt} />
-                  </Col>
-                ))}
-              </Row>
-            </div>
           </div>
         </div>
         <Modal
