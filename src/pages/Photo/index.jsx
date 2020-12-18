@@ -1,5 +1,5 @@
 import React from 'react';
-import { Upload, Button, Spin } from 'antd';
+import { Upload, Button, Modal } from 'antd';
 import Icon from '@ant-design/icons';
 import Layout from '../../layouts';
 import uploadSVG from '../../assets/upload.svg';
@@ -14,6 +14,7 @@ import cat4 from '../../assets/cat4.jpeg';
 import cat5 from '../../assets/cat5.jpeg';
 import cat6 from '../../assets/cat6.jpeg';
 import rightArrowSVG from '../../assets/right_arrow.svg';
+import upArrowSVG from '../../assets/up_arrow.svg';
 import styles from './index.less';
 
 const Loading = (props) => (
@@ -81,268 +82,454 @@ export default class Photo extends React.Component {
     super(props);
 
     this.state = {
-      loading: false,
+      loading: 'first',
+      visible: false,
+      photoStatus: false,
+      photo: null,
+      file: null,
     };
   }
+
+  clearphoto = (canvas, photo) => {
+    var context = canvas.getContext('2d');
+    context.fillStyle = '#AAA';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    var data = canvas.toDataURL('image/png');
+    photo.setAttribute('src', data);
+  };
+
+  takepicture = (canvas, width, height, video, photo, self) => {
+    var context = canvas.getContext('2d');
+    if (width && height) {
+      canvas.width = width;
+      canvas.height = height;
+      context.drawImage(video, 0, 0, width, height);
+
+      var data = canvas.toDataURL('image/png');
+      photo.setAttribute('src', data);
+      video.style.display = video.style.display === 'block' ? 'none' : 'block';
+      photo.style.display = photo.style.display === 'block' ? 'none' : 'block';
+      self.setState({
+        photo: data,
+      });
+      console.log(data);
+    } else {
+      this.clearphoto();
+    }
+  };
+
+  startup = () => {
+    var width = 320;
+    var height = 0;
+
+    var streaming = false;
+    var video = null;
+    var canvas = null;
+    var photo = null;
+    var startbutton = null;
+
+    video = window.document.getElementById('video');
+    console.log(video);
+    canvas = window.document.getElementById('canvas');
+    photo = window.document.getElementById('photo');
+    startbutton = window.document.getElementById('startbutton');
+    console.log(startbutton);
+
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: false })
+      .then(function (stream) {
+        video.srcObject = stream;
+        video.play();
+      })
+      .catch(function (err) {
+        console.log('An error occurred: ' + err);
+      });
+
+    video.addEventListener(
+      'canplay',
+      function (ev) {
+        if (!streaming) {
+          height = video.videoHeight / (video.videoWidth / width);
+
+          if (isNaN(height)) {
+            height = width / (4 / 3);
+          }
+
+          video.setAttribute('width', width);
+          video.setAttribute('height', height);
+          canvas.setAttribute('width', width);
+          canvas.setAttribute('height', height);
+          streaming = true;
+        }
+      },
+      false,
+    );
+    const self = this;
+    startbutton.addEventListener(
+      'click',
+      function (ev) {
+        self.takepicture(canvas, width, height, video, photo, self);
+        self.setState({ photoStatus: !self.state.photoStatus });
+        ev.preventDefault();
+      },
+      false,
+    );
+
+    this.clearphoto(canvas, photo);
+  };
+
   render() {
-    const { loading } = this.state;
+    const { loading, visible, photoStatus, file } = this.state;
+    const props = {
+      accept: 'image/*',
+      multiple: false,
+      name: 'file',
+      onChange: (info) => {
+        if (info.file.status === 'done') {
+          if (!info.file.type.includes('image/')) {
+            notification.error({
+              message: 'Please upload image',
+            });
+            return;
+          }
+          this.setState({
+            file: info.fileList,
+            loading: 'loading',
+          });
+          setTimeout(() => {
+            this.setState({
+              loading: 'success',
+            });
+          }, 3000);
+          console.log(info.fileList);
+        }
+      },
+      fileList: file ? [file[file.length - 1]] : [],
+    };
     const children = (
       <div className={styles.Photo}>
         <div className={styles.container}>
+          <Modal
+            width={680}
+            visible={visible}
+            onCancel={() =>
+              this.setState({
+                visible: false,
+              })
+            }
+            onOk={() => {
+              this.setState({
+                visible: false,
+                loading: 'loading',
+              });
+              setTimeout(() => {
+                this.setState({
+                  loading: 'success',
+                });
+              }, 3000);
+            }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <video
+                id="video"
+                style={{ width: 640, height: 480, display: 'block', marginBottom: 7 }}
+              ></video>
+              <img
+                id="photo"
+                alt="The screen capture will appear in this box."
+                style={{ width: 640, height: 480, display: 'none', marginBottom: 7 }}
+              />
+              <Button className={styles.button} id="startbutton">
+                {photoStatus ? 'Take again' : 'Take photo'}
+              </Button>
+            </div>
+            <canvas id="canvas" style={{ display: 'none' }}></canvas>
+          </Modal>
           <div className={styles.title}>
             Photo To Painting
             <div className={styles.subTitle}>(oracle_photo2painting_v3.02)</div>
           </div>
-          {/* <div className={styles.upload}>
-            {!loading ? (
-              <>
-                <div className={styles.title}>Upload your picture to see what happen</div>
-                <Upload openFileDialogOnClick={false} showUploadList={false}>
-                  <div className={styles.uploadArea}>
-                    <img src={uploadSVG} className={styles.uploadImage} />
-                    <div className={styles.drag}>Drag & Drop an Image</div>
-                    <div className={styles.or}>or</div>
-                    <div className={styles.buttonGroup}>
-                      <Button className={styles.button}>
-                        <img src={addImageSVG} />
-                        <div className={styles.content}>Add image</div>
-                      </Button>
-                      <Button className={styles.button}>
-                        <img src={takePhotoSVG} />
-                        <div className={styles.content}>Take photo</div>
-                      </Button>
+          {loading === 'success' && (
+            <div className={styles.success}>
+              <div className={styles.header}>
+                <div className={styles.title}>
+                  We just picked the best result for you, so enjoy it!
+                </div>
+                <div className={styles.buttonGroup}>
+                  <Button
+                    className={styles.button1}
+                    onClick={() => this.setState({ loading: 'first' })}
+                  >
+                    Go Back
+                  </Button>
+                  <Button className={styles.button2}>Download</Button>
+                </div>
+              </div>
+              <div className={styles.result}>
+                <div className={styles.left}>
+                  <div className={styles.rate}>Selection rate: 89%</div>
+                  <div className={styles.result}>
+                    <div className={styles.block}>
+                      <div
+                        className={styles.image}
+                        style={{
+                          backgroundImage: `url(${cat})`,
+                        }}
+                      ></div>
+                      <div className={styles.description}>Original Picture</div>
+                    </div>
+                    <img src={rightArrowSVG} />
+                    <div className={styles.block}>
+                      <div
+                        className={styles.image}
+                        style={{
+                          backgroundImage: `url(${cat1})`,
+                        }}
+                      ></div>
+                      <div className={styles.description}>The best was picked</div>
                     </div>
                   </div>
-                </Upload>
-              </>
-            ) : (
-              <>
-                <Icon spin component={Loading} />
-                <div className={styles.waiting}>Just only a moment ...</div>
-                <div className={styles.preparing}>Image are preparing</div>
-              </>
-            )}
-          </div> */}
-          {/* <div className={styles.example}>
-            <div className={styles.header}>
-              Here is an example of this magic app
-              <img src={exampleSVG} style={{ marginLeft: 13 }} />
-            </div>
-            <div className={styles.result}>
-              <div className={styles.block}>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat})`,
-                  }}
-                ></div>
-                <div className={styles.description}>Original Picture</div>
-              </div>
-              <img src={rightArrowSVG} />
-              <div className={styles.block}>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat1})`,
-                  }}
-                ></div>
-                <div className={styles.description}>The best was picked</div>
-              </div>
-            </div>
-            <div className={styles.suggestion}>
-              It was just picked from many different modal <br />
-              Here are some another results
-            </div>
-            <div className={styles.imageGroup}>
-              <div>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat2})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal 0124</div>
-              </div>
-              <div>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat3})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal 0124</div>
-              </div>
-              <div>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat4})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal 0124</div>
-              </div>
-              <div>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat5})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal 0124</div>
-              </div>
-              <div>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat6})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal 0124</div>
-              </div>
-            </div>
-          </div> */}
-          <div className={styles.success}>
-            <div className={styles.header}>
-              <div className={styles.title}>
-                We just picked the best result for you, so enjoy it!
-              </div>
-              <div className={styles.buttonGroup}>
-                <Button className={styles.button1}>Go Back</Button>
-                <Button className={styles.button2}>Download</Button>
-              </div>
-            </div>
-            <div className={styles.result}>
-              <div className={styles.left}>
-                <div className={styles.rate}>Selection rate: 89%</div>
-                <div className={styles.result}>
-                  <div className={styles.block}>
-                    <div
-                      className={styles.image}
-                      style={{
-                        backgroundImage: `url(${cat})`,
-                      }}
-                    ></div>
-                    <div className={styles.description}>Original Picture</div>
+                </div>
+                <div className={styles.right}>
+                  <div className={styles.content}>
+                    <span style={{ fontWeight: 600 }}>Model:&nbsp;</span>
+                    <span>93848aac7d8sffdccsss</span>
                   </div>
-                  <img src={rightArrowSVG} />
-                  <div className={styles.block}>
-                    <div
-                      className={styles.image}
-                      style={{
-                        backgroundImage: `url(${cat1})`,
-                      }}
-                    ></div>
-                    <div className={styles.description}>The best was picked</div>
+                  <div className={styles.content}>
+                    <span style={{ fontWeight: 600 }}>Kind:&nbsp;</span>
+                    <span>Abstract Art</span>
+                  </div>
+                  <div className={styles.content}>
+                    <span style={{ fontWeight: 600 }}>Time executed:&nbsp;</span>
+                    <span>00:00:89</span>
+                  </div>
+                  <div className={styles.content}>
+                    <span style={{ fontWeight: 600 }}>Additional Info:&nbsp;</span>
+                    <span>Legit content here type of cat or something</span>
+                  </div>
+                  <div className={styles.content}>
+                    <span style={{ fontWeight: 600 }}>Additional Info:&nbsp;</span>
+                    <span>Some legit content here</span>
                   </div>
                 </div>
               </div>
-              <div className={styles.right}>
-                <div className={styles.content}>
-                  <span style={{ fontWeight: 600 }}>Model:&nbsp;</span>
-                  <span>93848aac7d8sffdccsss</span>
+              <div className={styles.another}>
+                <div className={styles.title}>Another modal rate</div>
+                <Button className={styles.button}>All modal</Button>
+              </div>
+              <div className={styles.modal}>
+                <div className={styles.card}>
+                  <div
+                    className={styles.image}
+                    style={{
+                      backgroundImage: `url(${cat})`,
+                    }}
+                  ></div>
+                  <div className={styles.name}>Modal: 05bg7844ssfe</div>
+                  <div className={styles.rate}>Rate: 67%</div>
+                  <Button className={styles.button3}>Detail</Button>
                 </div>
-                <div className={styles.content}>
-                  <span style={{ fontWeight: 600 }}>Kind:&nbsp;</span>
-                  <span>Abstract Art</span>
+                <div className={styles.card}>
+                  <div
+                    className={styles.image}
+                    style={{
+                      backgroundImage: `url(${cat})`,
+                    }}
+                  ></div>
+                  <div className={styles.name}>Modal: 05bg7844ssfe</div>
+                  <div className={styles.rate}>Rate: 67%</div>
+                  <Button className={styles.button3}>Detail</Button>
                 </div>
-                <div className={styles.content}>
-                  <span style={{ fontWeight: 600 }}>Time executed:&nbsp;</span>
-                  <span>00:00:89</span>
+                <div className={styles.card}>
+                  <div
+                    className={styles.image}
+                    style={{
+                      backgroundImage: `url(${cat})`,
+                    }}
+                  ></div>
+                  <div className={styles.name}>Modal: 05bg7844ssfe</div>
+                  <div className={styles.rate}>Rate: 67%</div>
+                  <Button className={styles.button3}>Detail</Button>
                 </div>
-                <div className={styles.content}>
-                  <span style={{ fontWeight: 600 }}>Additional Info:&nbsp;</span>
-                  <span>Legit content here type of cat or something</span>
+                <div className={styles.card}>
+                  <div
+                    className={styles.image}
+                    style={{
+                      backgroundImage: `url(${cat})`,
+                    }}
+                  ></div>
+                  <div className={styles.name}>Modal: 05bg7844ssfe</div>
+                  <div className={styles.rate}>Rate: 67%</div>
+                  <Button className={styles.button3}>Detail</Button>
                 </div>
-                <div className={styles.content}>
-                  <span style={{ fontWeight: 600 }}>Additional Info:&nbsp;</span>
-                  <span>Some legit content here</span>
+                <div className={styles.card}>
+                  <div
+                    className={styles.image}
+                    style={{
+                      backgroundImage: `url(${cat})`,
+                    }}
+                  ></div>
+                  <div className={styles.name}>Modal: 05bg7844ssfe</div>
+                  <div className={styles.rate}>Rate: 67%</div>
+                  <Button className={styles.button3}>Detail</Button>
+                </div>
+                <div className={styles.card}>
+                  <div
+                    className={styles.image}
+                    style={{
+                      backgroundImage: `url(${cat})`,
+                    }}
+                  ></div>
+                  <div className={styles.name}>Modal: 05bg7844ssfe</div>
+                  <div className={styles.rate}>Rate: 67%</div>
+                  <Button className={styles.button3}>Detail</Button>
+                </div>
+                <div className={styles.card}>
+                  <div
+                    className={styles.image}
+                    style={{
+                      backgroundImage: `url(${cat})`,
+                    }}
+                  ></div>
+                  <div className={styles.name}>Modal: 05bg7844ssfe</div>
+                  <div className={styles.rate}>Rate: 67%</div>
+                  <Button className={styles.button3}>Detail</Button>
                 </div>
               </div>
             </div>
-            <div className={styles.another}>
-              <div className={styles.title}>Another modal rate</div>
-              <Button className={styles.button}>All modal</Button>
+          )}
+          {loading !== 'success' && (
+            <div className={styles.upload}>
+              {loading === 'first' ? (
+                <>
+                  <div className={styles.title}>Upload your picture to see what happen</div>
+                  <Upload openFileDialogOnClick={false} showUploadList={false} {...props}>
+                    <div className={styles.uploadArea}>
+                      <img src={uploadSVG} className={styles.uploadImage} />
+                      <div className={styles.drag}>Drag & Drop an Image</div>
+                      <div className={styles.or}>or</div>
+                      <div className={styles.buttonGroup}>
+                        <Upload showUploadList={false} {...props}>
+                          <Button className={styles.button}>
+                            <img src={addImageSVG} />
+                            <div className={styles.content}>Add image</div>
+                          </Button>
+                        </Upload>
+                        <Button
+                          className={styles.button}
+                          onClick={() => {
+                            this.setState({ visible: true });
+                            setTimeout(() => {
+                              this.startup();
+                            }, 1000);
+                          }}
+                        >
+                          <img src={takePhotoSVG} />
+                          <div className={styles.content}>Take photo</div>
+                        </Button>
+                      </div>
+                    </div>
+                  </Upload>
+                </>
+              ) : (
+                loading === 'loading' && (
+                  <>
+                    <Icon spin component={Loading} />
+                    <div className={styles.waiting}>Just only a moment ...</div>
+                    <div className={styles.preparing}>Image are preparing</div>
+                  </>
+                )
+              )}
             </div>
-            <div className={styles.modal}>
-              <div className={styles.card}>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal: 05bg7844ssfe</div>
-                <div className={styles.rate}>Rate: 67%</div>
-                <Button className={styles.button}>Detail</Button>
+          )}
+          {loading !== 'success' && (
+            <div className={styles.example}>
+              <div className={styles.header}>
+                Here is an example of this magic app
+                <img
+                  src={loading === 'first' ? exampleSVG : upArrowSVG}
+                  style={{ marginLeft: 13 }}
+                />
               </div>
-              <div className={styles.card}>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal: 05bg7844ssfe</div>
-                <div className={styles.rate}>Rate: 67%</div>
-                <Button className={styles.button}>Detail</Button>
-              </div>
-              <div className={styles.card}>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal: 05bg7844ssfe</div>
-                <div className={styles.rate}>Rate: 67%</div>
-                <Button className={styles.button}>Detail</Button>
-              </div>
-              <div className={styles.card}>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal: 05bg7844ssfe</div>
-                <div className={styles.rate}>Rate: 67%</div>
-                <Button className={styles.button}>Detail</Button>
-              </div>
-              <div className={styles.card}>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal: 05bg7844ssfe</div>
-                <div className={styles.rate}>Rate: 67%</div>
-                <Button className={styles.button}>Detail</Button>
-              </div>
-              <div className={styles.card}>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal: 05bg7844ssfe</div>
-                <div className={styles.rate}>Rate: 67%</div>
-                <Button className={styles.button}>Detail</Button>
-              </div>
-              <div className={styles.card}>
-                <div
-                  className={styles.image}
-                  style={{
-                    backgroundImage: `url(${cat})`,
-                  }}
-                ></div>
-                <div className={styles.name}>Modal: 05bg7844ssfe</div>
-                <div className={styles.rate}>Rate: 67%</div>
-                <Button className={styles.button}>Detail</Button>
-              </div>
+              {loading === 'loading' && (
+                <>
+                  <div className={styles.result}>
+                    <div className={styles.block}>
+                      <div
+                        className={styles.image}
+                        style={{
+                          backgroundImage: `url(${cat})`,
+                        }}
+                      ></div>
+                      <div className={styles.description}>Original Picture</div>
+                    </div>
+                    <img src={rightArrowSVG} />
+                    <div className={styles.block}>
+                      <div
+                        className={styles.image}
+                        style={{
+                          backgroundImage: `url(${cat1})`,
+                        }}
+                      ></div>
+                      <div className={styles.description}>The best was picked</div>
+                    </div>
+                  </div>
+                  <div className={styles.suggestion}>
+                    It was just picked from many different modal <br />
+                    Here are some another results
+                  </div>
+                  <div className={styles.imageGroup}>
+                    <div>
+                      <div
+                        className={styles.image}
+                        style={{
+                          backgroundImage: `url(${cat2})`,
+                        }}
+                      ></div>
+                      <div className={styles.name}>Modal 0124</div>
+                    </div>
+                    <div>
+                      <div
+                        className={styles.image}
+                        style={{
+                          backgroundImage: `url(${cat3})`,
+                        }}
+                      ></div>
+                      <div className={styles.name}>Modal 0124</div>
+                    </div>
+                    <div>
+                      <div
+                        className={styles.image}
+                        style={{
+                          backgroundImage: `url(${cat4})`,
+                        }}
+                      ></div>
+                      <div className={styles.name}>Modal 0124</div>
+                    </div>
+                    <div>
+                      <div
+                        className={styles.image}
+                        style={{
+                          backgroundImage: `url(${cat5})`,
+                        }}
+                      ></div>
+                      <div className={styles.name}>Modal 0124</div>
+                    </div>
+                    <div>
+                      <div
+                        className={styles.image}
+                        style={{
+                          backgroundImage: `url(${cat6})`,
+                        }}
+                      ></div>
+                      <div className={styles.name}>Modal 0124</div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
