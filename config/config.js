@@ -33,6 +33,10 @@ export default defineConfig({
       component: './Home',
     },
     {
+      path: '/photo',
+      component: './Photo',
+    },
+    {
       component: './404',
     },
   ],
