@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketplace
+  labels:
+    app: marketplace
+spec:
+  selector:
+    matchLabels:
+      app: marketplace
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: marketplace
+    spec:
+      containers:
+      - name: marketplace
+        image: thao1996/marketplace:6c654864c7570952c8ed78718e2a7c529e90ca28
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+      imagePullSecrets:
+      - name: regcred
+      restartPolicy: Always

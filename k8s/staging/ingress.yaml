@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: marketplace
+spec:
+  rules:
+  - host: staging-marketplace.orai.io
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: marketplace
+          servicePort: 5000
