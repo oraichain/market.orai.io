@@ -230,7 +230,7 @@ class Game extends React.Component {
               </Row>
             </>
           )}
-          {result && (
+          {
             <>
               <div className={styles.image}>
                 <img
@@ -239,7 +239,7 @@ class Game extends React.Component {
                   height={250}
                   style={{ marginRight: 70 }}
                 />
-                <img src={require('../../assets/qr.png')} width={161} height={160} />
+                <img src={require('../../assets/qrcode.png')} width={161} height={160} />
               </div>
               <div className={styles.success}>Yeah! You just completed our misson!</div>
               <div className={styles.description}>
@@ -268,7 +268,7 @@ class Game extends React.Component {
                 />
               </div>
             </>
-          )}
+          }
           {result === false && (
             <>
               <div className={styles.image}>
