@@ -4,19 +4,9 @@ import { Row, Col, Button, Input, Spin } from 'antd';
 import styles from './index.less';
 import axios from 'axios';
 import { TwitterShareButton } from 'react-twitter-embed';
+import { v4 as uuidv4 } from 'uuid';
 
-const questionIndex = [
-  [2, 3].toString(),
-  [1, 11].toString(),
-  [1, 6].toString(),
-  [0, 13].toString(),
-  [2, 1].toString(),
-  [9, 2].toString(),
-  [4, 1].toString(),
-  [2, 8].toString(),
-  [9, 2].toString(),
-  [6, 11].toString(),
-];
+const id = uuidv4().slice(0, 4).toUpperCase();
 
 class Game extends React.Component {
   constructor(props) {
@@ -239,7 +229,11 @@ class Game extends React.Component {
                   height={250}
                   style={{ marginRight: 70 }}
                 />
-                <img src={require('../../assets/qr.png')} width={161} height={160} />
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?data=${id}%27&amp;size=50x50`}
+                  width={161}
+                  height={160}
+                />
               </div>
               <div className={styles.success}>Yeah! You just completed our misson!</div>
               <div className={styles.description}>
@@ -258,10 +252,12 @@ class Game extends React.Component {
                   Play Again
                 </Button>
                 <TwitterShareButton
-                  url="http://market.orai.io/christmasGame"
+                  url={'.'}
                   options={{
-                    text: '#reactjs is awesome',
-                    via: 'oraichain',
+                    text:
+                      "It's almost Christmas🎄celebration time🎉!\nWin up to $112.12 in $ORAI by solving our AI-generated crossword puzzle!\n- Go to https://marketplace.orai.io/christmasGame\n- Submit answers\n- Tweet result: " +
+                      id +
+                      ' + #chungmas\nReceive $11.21 in🏆 on 1/1/2021\n🍀1 person wins $112.1💰\nMax. 200 winners✨',
                     size: 'large',
                   }}
                   placeholder={<div />}
