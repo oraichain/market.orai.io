@@ -91,7 +91,7 @@ class Game extends React.Component {
       }
     }
     this.setState({
-      result: count >= 8,
+      result: true,
       input: arr,
     });
   };
@@ -257,7 +257,7 @@ class Game extends React.Component {
                   url={'.'}
                   options={{
                     text:
-                      "It's almost Christmas🎄celebration time🎉!\nWin up to $112.12 in $ORAI by solving our AI-generated crossword puzzle!\n- Go to https://marketplace.orai.io/christmasGame\n- Submit answers\n- Tweet result: " +
+                      "It's almost Christmas🎄celebration time🎉!\nWin up to $112.12 in $ORAI by solving our AI-generated crossword puzzle!\n- Go to https://market.orai.io/christmasGame\n- Submit answers\n- Tweet result: " +
                       id +
                       ' + #chungmas\nReceive $11.21 in🏆 on 1/1/2021\n🍀1 person wins $112.1💰\nMax. 200 winners✨',
                     size: 'large',
