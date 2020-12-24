@@ -37,6 +37,10 @@ export default defineConfig({
       component: './Photo',
     },
     {
+      path: '/game',
+      component: './Game',
+    },
+    {
       component: './404',
     },
   ],
