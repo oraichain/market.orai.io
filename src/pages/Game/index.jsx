@@ -1,62 +1,9 @@
 import React from 'react';
 import Layout from '../../layouts';
-import { Row, Col, Button, Input } from 'antd';
+import { Row, Col, Button, Input, Spin } from 'antd';
 import styles from './index.less';
 import axios from 'axios';
 import { TwitterShareButton } from 'react-twitter-embed';
-
-let questionMatrix = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0],
-  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
-  [0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0],
-  [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-];
-
-const answerMatrix = [
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A', 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 'C', 0, 0, 0, 0, 'W', 0, 'K', 0, 0, 0],
-  [0, 'S', 'A', 'T', 'O', 'S', 'H', 'I', 'N', 'A', 'K', 'A', 'M', 'O', 'T', 'O', 0],
-  [0, 0, 0, 'E', 0, 0, 'U', 0, 'O', 0, 0, 'L', 0, 'N', 0, 0, 0],
-  [0, 'D', 'U', 'C', 0, 0, 'N', 0, 'O', 0, 0, 'L', 0, 0, 0, 0, 0],
-  [0, 0, 0, 'H', 0, 0, 'G', 0, 'B', 0, 0, 'E', 0, 0, 0, 0, 0],
-  [0, 0, 0, 'N', 0, 0, 0, 0, 'N', 0, 0, 'T', 'H', 'A', 'O', 0, 0],
-  [0, 0, 0, 'I', 0, 0, 0, 0, 'O', 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 'C', 0, 0, 0, 0, 'O', 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 'V', 'A', 'U', 'L', 'T', 0, 'B', 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 'L', 0, 'M', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 'E', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-];
-
-const questionList = [
-  'What kind of questions can be asked in https://t.me/oraitech',
-  'You put your cryptocurrency in a ',
-  'CEO of Oraichain',
-  'Famous singer that is building the first "crypto-city"',
-  'Creator of Bitcoin',
-  'First liquidity provider program for Orai',
-  'CPO of Oraichain',
-  'Community leader/MOD that is known for killing FUD',
-  'Best place to hold Orai',
-  'CTO of Oraichain',
-];
 
 const questionIndex = [
   [2, 3].toString(),
@@ -86,21 +33,34 @@ class Game extends React.Component {
     this.state = {
       input,
       result: null,
+      answerMatrix: null,
+      questionMatrix: null,
+      questionList: null,
+      loading: true,
     };
   }
 
   async componentDidMount() {
-    var config = {
+    const config = {
       method: 'get',
       url: 'http://128.199.241.140:8085/v1/gen_crossword',
     };
 
-    const { data } = axios(config);
-    console.log(data);
+    const {
+      data: { data },
+    } = await axios(config);
+    if (data.status === 200) {
+      this.setState({
+        questionList: data.questions_list,
+        questionMatrix: data.question_matrix,
+        answerMatrix: data.answer_matrix,
+        loading: false,
+      });
+    }
   }
 
   getResult = () => {
-    const { input } = this.state;
+    const { input, answerMatrix } = this.state;
     let result = true;
     loop1: for (let i = 0; i < answerMatrix.length; i++) {
       for (let j = 0; j < answerMatrix[i].length; j++) {
@@ -170,7 +130,7 @@ class Game extends React.Component {
                   });
                 }}
               />
-              {questionIndex.includes([i, j].toString()) && (
+              {/* {questionIndex.includes([i, j].toString()) && (
                 <div
                   style={{
                     position: 'absolute',
@@ -182,7 +142,7 @@ class Game extends React.Component {
                 >
                   {questionIndex.indexOf([i, j].toString()) + 1}
                 </div>
-              )}
+              )} */}
             </div>
           );
         } else {
@@ -205,8 +165,19 @@ class Game extends React.Component {
   };
 
   render() {
-    const { result } = this.state;
-    const children = (
+    const { result, questionMatrix, questionList, loading } = this.state;
+    const children = loading ? (
+      <div
+        style={{
+          height: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Spin />
+      </div>
+    ) : (
       <div className={styles.game}>
         <div className={styles.container}>
           {result === null && (
@@ -275,7 +246,7 @@ class Game extends React.Component {
                   Play Again
                 </Button>
                 <TwitterShareButton
-                  url="http://market.orai.io/game"
+                  url="http://market.orai.io/christmasGame"
                   options={{
                     text: '#reactjs is awesome',
                     via: 'oraichain',

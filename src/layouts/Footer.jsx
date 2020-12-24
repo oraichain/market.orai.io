@@ -68,7 +68,7 @@ class Footer extends React.PureComponent {
                   href="https://drive.google.com/drive/u/0/folders/16AOw7DJNkLp4IryQEpp1kfzGdhoJWBc_"
                   target="_blank"
                 >
-                  Media Park
+                  Media Kit
                 </a>
               </p>
             </Col>
@@ -79,7 +79,7 @@ class Footer extends React.PureComponent {
               </p>
               <p>
                 <a style={{ color: '#8AA2C9' }} href="https://liquidity.orai.io/" target="_blank">
-                  MLE
+                  LME
                 </a>
               </p>
               <p>
@@ -98,7 +98,7 @@ class Footer extends React.PureComponent {
                   href="https://market.orai.io/oscript"
                   target="_blank"
                 >
-                  Marketpalce
+                  Marketplace
                 </a>
               </p>
             </Col>
