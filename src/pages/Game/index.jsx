@@ -157,15 +157,18 @@ class Game extends React.Component {
       down = questionList.filter((i) => i[4] === 1);
     }
     const children = loading ? (
-      <div
-        style={{
-          height: '100vh',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <Spin />
+      <div className={styles.game}>
+        <div
+          className={styles.container}
+          style={{
+            minHeight: '70vh',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Spin size="large" />
+        </div>
       </div>
     ) : (
       <div className={styles.game}>
@@ -212,6 +215,10 @@ class Game extends React.Component {
                     className={styles.submit}
                     onClick={() => {
                       this.getResult();
+                      this.setState({
+                        loading: true,
+                      });
+                      setTimeout(() => this.setState({ loading: false }), 1000);
                     }}
                   >
                     Submit Answer
@@ -236,11 +243,6 @@ class Game extends React.Component {
                 />
               </div>
               <div className={styles.success}>Yeah! You just completed our misson!</div>
-              <div className={styles.description}>
-                You done it very quick, well done!
-                <br />
-                Use the QR code above or click below button to share to your friends
-              </div>
               <div className={styles.buttonGroup}>
                 <Button
                   className={styles.button1}
