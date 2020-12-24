@@ -43,7 +43,7 @@ class Game extends React.Component {
   async componentDidMount() {
     const config = {
       method: 'get',
-      url: 'http://128.199.241.140:8085/v1/gen_crossword',
+      url: 'https://api.game.orai.io/v1/gen_crossword',
     };
 
     const {
