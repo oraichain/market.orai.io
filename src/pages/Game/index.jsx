@@ -41,6 +41,13 @@ class Game extends React.Component {
   }
 
   async componentDidMount() {
+    this.fetchData();
+  }
+
+  fetchData = async () => {
+    this.setState({
+      loading: true,
+    });
     const config = {
       method: 'get',
       url: 'https://api.game.orai.io/v1/gen_crossword',
@@ -57,20 +64,33 @@ class Game extends React.Component {
         loading: false,
       });
     }
-  }
+  };
 
-  getResult = () => {
-    const { input, answerMatrix } = this.state;
-    let result = true;
-    loop1: for (let i = 0; i < answerMatrix.length; i++) {
-      for (let j = 0; j < answerMatrix[i].length; j++) {
-        if (answerMatrix[i][j] === 0) continue;
-        if (answerMatrix[i][j] !== input[i][j]) {
-          result = false;
-          break loop1;
+  getResult = async () => {
+    const { input, answerMatrix, questionList } = this.state;
+    let count = 0;
+
+    questionList.forEach((item) => {
+      let result = true;
+      if (item[4] === 0) {
+        for (let i = item[3]; i < item[3] + item[0]; i++) {
+          if (answerMatrix[item[2]][i] !== input[item[2]][i]) {
+            result = false;
+            break;
+          }
         }
+        if (result) count++;
+      } else {
+        for (let i = item[2]; i < item[2] + item[0]; i++) {
+          if (answerMatrix[i][item[3]] !== input[i][item[3]]) {
+            result = false;
+            break;
+          }
+        }
+        if (result) count++;
       }
-    }
+    });
+
     const arr = new Array(17);
     for (let i = 0; i < 17; i++) {
       arr[i] = new Array(17);
@@ -81,7 +101,7 @@ class Game extends React.Component {
       }
     }
     this.setState({
-      result,
+      result: count >= 8,
       input: arr,
     });
   };
@@ -90,36 +110,17 @@ class Game extends React.Component {
     var questionMatrix = matrix.map(function (arr) {
       return arr.slice();
     });
-    const { input } = this.state;
+    const { input, questionList } = this.state;
+    const across = questionList.filter((i) => i[4] === 0).map((i) => [i[2], i[3]].toString());
+    const down = questionList.filter((i) => i[4] === 1).map((i) => [i[2], i[3]].toString());
+
     for (let i = 0; i < questionMatrix.length; i++) {
       for (let j = 0; j < questionMatrix[i].length; j++) {
         if (questionMatrix[i][j]) {
           questionMatrix[i][j] = (
-            <div
-              key={[i, j].toString()}
-              style={{
-                width: 34,
-                height: 34,
-                border: '1px solid #E7E7E7',
-                boxSizing: 'border-box',
-                position: 'relative',
-              }}
-            >
+            <div key={[i, j].toString()} className={styles.box}>
               <Input
-                style={{
-                  fontSize: 12,
-                  textTransform: 'capitalize',
-                  width: '100%',
-                  height: '100%',
-                  fontFamily: 'Roboto',
-                  fontStyle: 'normal',
-                  fontWeight: 'normal',
-                  fontSize: '14px',
-                  lineHeight: '150%',
-                  color: '#181818',
-                  padding: 0,
-                  textAlign: 'center',
-                }}
+                className={styles.input}
                 defaultValue={''}
                 maxLength={1}
                 onChange={(e) => {
@@ -130,19 +131,14 @@ class Game extends React.Component {
                   });
                 }}
               />
-              {/* {questionIndex.includes([i, j].toString()) && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: -3,
-                    left: 3,
-                    zIndex: 15,
-                    fontSize: 12,
-                  }}
-                >
-                  {questionIndex.indexOf([i, j].toString()) + 1}
+              {across.includes([i, j].toString()) && (
+                <div className={styles.order}>{across.indexOf([i, j].toString()) + 1}</div>
+              )}
+              {down.includes([i, j].toString()) && (
+                <div className={styles.order}>
+                  {down.indexOf([i, j].toString()) + 1 + across.length}
                 </div>
-              )} */}
+              )}
             </div>
           );
         } else {
@@ -150,8 +146,6 @@ class Game extends React.Component {
             <div
               key={[i, j].toString()}
               style={{
-                width: 34,
-                height: 34,
                 border: '1px solid #E7E7E7',
                 boxSizing: 'border-box',
                 visibility: 'hidden',
@@ -166,6 +160,12 @@ class Game extends React.Component {
 
   render() {
     const { result, questionMatrix, questionList, loading } = this.state;
+    let across;
+    let down;
+    if (!loading) {
+      across = questionList.filter((i) => i[4] === 0);
+      down = questionList.filter((i) => i[4] === 1);
+    }
     const children = loading ? (
       <div
         style={{
@@ -183,13 +183,14 @@ class Game extends React.Component {
           {result === null && (
             <>
               <Row className={styles.header}>
-                <Col span={12} className={styles.img}>
+                <Col span={24} lg={12} className={styles.img}>
                   <img src={require('../../assets/Happy-Christmas.png')} width={260} height={48} />
                 </Col>
               </Row>
               <Row className={styles.content}>
                 <Col
-                  span={12}
+                  span={24}
+                  lg={12}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -199,16 +200,21 @@ class Game extends React.Component {
                   }}
                 >
                   <div className={styles.title}>
-                    Let’s play a crossword game with us <br />
-                    You may have a gift if you finish it!
+                    Finish the crossword puzzle and receive one of our many prizes!
                   </div>
                   <div className={styles.matrix}>{this.renderMatrix(questionMatrix)}</div>
                 </Col>
-                <Col span={12} className={styles.questions}>
-                  <div className={styles.across}>Questions</div>
-                  {questionList.map((item, idx) => (
+                <Col span={24} lg={12} className={styles.questions}>
+                  <div className={styles.across}>Across</div>
+                  {across.map((item, idx) => (
                     <div className={styles.question}>
-                      {idx + 1}. {item}
+                      {idx + 1}. {item[1]}
+                    </div>
+                  ))}
+                  <div className={styles.down}>Down</div>
+                  {down.map((item, idx) => (
+                    <div className={styles.question}>
+                      {idx + 1 + across.length}. {item[1]}
                     </div>
                   ))}
                   <div className={styles.sure}>Are you sure this is your final answer? </div>
@@ -242,7 +248,13 @@ class Game extends React.Component {
                 Use the QR code above or click below button to share to your friends
               </div>
               <div className={styles.buttonGroup}>
-                <Button className={styles.button1} onClick={() => this.setState({ result: null })}>
+                <Button
+                  className={styles.button1}
+                  onClick={() => {
+                    this.setState({ result: null });
+                    this.fetchData();
+                  }}
+                >
                   Play Again
                 </Button>
                 <TwitterShareButton
@@ -269,7 +281,13 @@ class Game extends React.Component {
                 You can play again, maybe this time will be better!
               </div>
               <div className={styles.buttonGroup}>
-                <Button className={styles.button2} onClick={() => this.setState({ result: null })}>
+                <Button
+                  className={styles.button2}
+                  onClick={() => {
+                    this.setState({ result: null });
+                    this.fetchData();
+                  }}
+                >
                   Play Again
                 </Button>
               </div>
