@@ -33,6 +33,10 @@ export default defineConfig({
       component: './Home',
     },
     {
+      path: '/oscript/marketdetail',
+      component: './Home/MarketDetail',
+    },
+    {
       path: '/photo',
       component: './Photo',
     },
