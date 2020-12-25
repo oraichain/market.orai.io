@@ -76,7 +76,7 @@ class Header extends React.Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount() { 
     this.setState({
       walletAddress: window.localStorage.getItem('wallet_address'),
     });
@@ -210,7 +210,7 @@ class Header extends React.Component {
               />
               <span
                 style={{
-                  fontFamily: 'Roboto',
+                  fontFamily: 'Roboto, sans-serif',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   fontSize: 18,

@@ -954,7 +954,7 @@ class Market extends React.Component {
                 )}
               </Form>
             )}
-          </div>
+          </div> 
         </Modal>
       </div>
     );
