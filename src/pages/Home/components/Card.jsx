@@ -32,9 +32,9 @@ export default function Card({ name, description, tryIt }) {
         <Link to="/oscript/marketdetail">
           <Button
             className={styles.button}
-            onClick={() => {
-              tryIt(name);
-            }}
+            // onClick={() => {
+            //   tryIt(name);
+            // }}
           >
             Try it now
         </Button>

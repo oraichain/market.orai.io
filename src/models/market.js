@@ -12,7 +12,7 @@ const UserModel = {
       const response = (yield call(fetch, page, limit)).data
       yield put({
         type: "saveScripts",
-        payload: response.result.oracle_scripts
+        payload: response.result.oracle_scripts ? response.result.oracle_scripts : []
       })
       yield put({
         type: "saveTotal",
