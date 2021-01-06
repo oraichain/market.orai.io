@@ -421,6 +421,7 @@ class Market extends React.Component {
                 <img src={expandSVG} />
               </div>
               <Row grid={[20, 20]}>
+                {console.log(scripts)}
                 {scripts.map((script, idx) => (
                   <Col span={8} key={idx}>
                     <Card name={script.name} description={script.description} tryIt={this.tryIt} />
@@ -430,7 +431,7 @@ class Market extends React.Component {
             </div>
           </div>
         </div>
-        <Modal
+        {/* <Modal
           title={`Oracle script (${currentScript})`}
           visible={visible}
           footer={null}
@@ -955,7 +956,7 @@ class Market extends React.Component {
               </Form>
             )}
           </div> 
-        </Modal>
+        </Modal> */}
       </div>
     );
 
