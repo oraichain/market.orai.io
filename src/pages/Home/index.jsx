@@ -407,6 +407,8 @@ class Market extends React.Component {
                 <div className={styles.title}>Hot pick today</div>
                 <img src={expandSVG} />
               </div>
+              <h1>We are reworking. Stay tuned!</h1>
+
               <Row grid={[20, 20]}>
                 {scripts.map((script, idx) => (
                   <Col span={8} key={idx}>
@@ -419,8 +421,11 @@ class Market extends React.Component {
               <div className={styles.header}>
                 <div className={styles.title}>Popular AI API</div>
                 <img src={expandSVG} />
+
               </div>
               <Row grid={[20, 20]}>
+              <h1>We are reworking. Stay tuned!</h1>
+
                 {console.log(scripts)}
                 {scripts.map((script, idx) => (
                   <Col span={8} key={idx}>
