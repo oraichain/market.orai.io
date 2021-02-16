@@ -11,3 +11,10 @@ spec:
         backend:
           serviceName: marketplace
           servicePort: 5000
+- host: market.orai.io
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: marketplace
+          servicePort: 5000
