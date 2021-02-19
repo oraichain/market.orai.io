@@ -45,8 +45,12 @@ export default defineConfig({
       component: './Game',
     },
     {
-      component: './404',
+      path: '/landingPage',
+      component: "./LandingPage"
     },
+    {
+      component: './404',
+    }
   ],
   // Theme for antd: https://ant.design/docs/react/customize-theme-cn
   theme: {
