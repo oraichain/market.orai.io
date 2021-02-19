@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: marketplace
-        image: thao1996/marketplace:8a22292507e5245a3e2d4e9a3958443254c18999
+        image: thao1996/marketplace:40139272726c1d5fe11794a886ac4fd581da76cf
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
