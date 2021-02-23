@@ -1,6 +1,9 @@
 .market {
   background: #e5e5e5;
   padding-top: 30px;
+  padding-bottom: 30px;
+  padding-left: 70px;
+  padding-right: 70px;
 
   .container {
     max-width: 1400px;
@@ -19,22 +22,18 @@
       // width: 280px;
       margin-right: 20px;
       height: fit-content;
-
-      .marketplace {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-        .title {
-          font-weight: 500;
+        
+        .leftTitle {
+          font-weight: bold;
           font-size: 20px;
           line-height: 150%;
           color: #181818;
+          margin-bottom: 20px;
         }
 
         .back {
           cursor: pointer;
         }
-      }
 
       .input {
         border: 1px solid #e7e7e7;
@@ -97,21 +96,22 @@
         margin-top: 20px;
       }
 
-      .filter {
-        font-weight: 500;
+      .tag {
+        background-color: #E3F5FF;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        margin-top: 8px;
+        border-color: #E3F5FF;
+        border-radius: 4px;
+      }
+
+      .leftSubtitle {
+        font-weight: bold;
         font-size: 16px;
         line-height: 150%;
         color: #000000;
         margin-top: 20px;
         margin-bottom: 10px;
-      }
-
-      .categories {
-        font-weight: 500;
-        font-size: 16px;
-        line-height: 150%;
-        color: #000000;
-        margin-top: 20px;
       }
 
       .category {
@@ -133,6 +133,9 @@
 
     .content {
       .block {
+        display: flex;
+        flex-flow: column;
+        align-items: flex-end;
         background: #ffffff;
         box-shadow: 0px 2px 8px rgba(174, 195, 210, 0.25);
         border-radius: 8px;
@@ -141,11 +144,12 @@
 
         .header {
           display: flex;
+          width: 100%;
           justify-content: space-between;
           margin-bottom: 20px;
 
-          .title {
-            font-weight: 500;
+          .rightTitle {
+            font-weight: bold;
             font-size: 20px;
             line-height: 150%;
             color: #181818;

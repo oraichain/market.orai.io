@@ -13,6 +13,9 @@ import {
   Upload,
   notification,
   Switch,
+  Tag,
+  Space,
+  Pagination,
 } from 'antd';
 import { CopyOutlined, InfoCircleTwoTone } from '@ant-design/icons';
 import Card from './components/Card';
@@ -26,6 +29,7 @@ import categoriesSVG from '../../assets/categories.svg';
 import backSVG from '../../assets/back.svg';
 import expandSVG from '../../assets/expand.svg';
 import styles from './index.less';
+import Axios from 'axios';
 
 const { Option } = Select;
 
@@ -98,6 +102,12 @@ class Market extends React.Component {
       defaultImage: 'great_white_shark',
       handling: false,
       defaultOcr: '0',
+      filter: [],
+      categories: [],
+      models: [],
+      numModels: 0,
+      currentPage: 1,
+      searchedWord: ""
     };
 
     this.form = React.createRef();
@@ -114,7 +124,30 @@ class Market extends React.Component {
         page: 1,
       },
     });
+    this.getMetadata();
+    this.getModels();
   }
+
+  componentDidUpdate() {
+    this.getModels();
+  }
+
+  getMetadata = async () => {
+    let result = await Axios.get("https://api.marketplace.orai.io/v1/metadata");
+    if (result.data.status === 1 && "data" in result.data)
+      this.setState({
+        filter: result.data.data.keywords,
+        categories: result.data.data.categories
+      });
+  };
+
+  getModels = async () => {
+    let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${this.state.searchedWord}&limit=9&page=${this.state.currentPage}`);
+    let arr = [];
+    if (result.data.status === 1 && "data" in result.data)
+      result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
+    this.setState({ models: arr, numModels: result.data.data.totalDocs });
+  };
 
   tryIt = (name) => {
     this.setState({
@@ -349,90 +382,69 @@ class Market extends React.Component {
       <div className={styles.market}>
         <div className={styles.container}>
           <div className={styles.menu}>
-            <div className={styles.marketplace}>
-              <div className={styles.title}>Marketplace</div>
-              <div className={styles.back}>
-                <img src={backSVG} />
-              </div>
-            </div>
+            <div className={styles.leftTitle}>Marketplace</div>
             <Input
               className={styles.input}
               placeholder="Search your AI modal"
               suffix={<img src={searchSVG} />}
             />
-            <div className={styles.all}>
-              <div>
-                <img
-                  src={allSVG}
-                  style={{
-                    position: 'absolute',
-                    left: 15,
-                    top: 15,
-                    zIndex: 2,
-                  }}
-                />
-                <img
-                  src={all2SVG}
-                  style={{
-                    position: 'absolute',
-                    left: 10,
-                    zIndex: 1,
-                  }}
-                />
-              </div>
-              <div className={styles.content}>All AI products</div>
-            </div>
-            <div className={styles.notification}>
-              <img src={notificationSVG} />
-              <div className={styles.content}>Notification</div>
-            </div>
-            <Button className={styles.button}>Don’t know what you need?</Button>
             <div className={styles.hr} />
-            <div className={styles.filter}>Filter</div>
+            <div className={styles.leftSubtitle}>Filter</div>
             <Input
               placeholder="Find the area you need"
               className={styles.input}
               suffix={<img src={searchSVG} />}
-            />
+              onPressEnter={e => this.setState({ searchedWord: e.target.value })} />
+            {this.state.filter.map((tag, index) =>
+              <Tag closable key={index} className={styles.tag}>{tag}</Tag>
+            )}
             <div className={styles.hr} />
-            <div className={styles.categories}>Categories</div>
-            <div className={styles.category}>
-              <img src={categoriesSVG} />
-              <div className={styles.content}>Type AI 1 -- product</div>
-            </div>
+            <div className={styles.leftSubtitle}>Categories</div>
+            {this.state.categories.map((category, index) =>
+              <div className={styles.category} key={index}>
+                <img src={categoriesSVG} />
+                <div className={styles.content}>Type AI {index} -- {category}</div>
+              </div>
+            )}
           </div>
           <div className={styles.content}>
             <div className={styles.block}>
               <div className={styles.header}>
-                <div className={styles.title}>Hot pick today</div>
+                <div className={styles.rightTitle}>Hot pick today</div>
                 <img src={expandSVG} />
               </div>
-              <h1>We are reworking. Stay tuned!</h1>
-
-              <Row grid={[20, 20]}>
-                {scripts.map((script, idx) => (
-                  <Col span={8} key={idx}>
-                    <Card name={script.name} description={script.description} tryIt={this.tryIt} />
-                  </Col>
-                ))}
-              </Row>
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(0, 3).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
             </div>
             <div className={styles.block}>
               <div className={styles.header}>
-                <div className={styles.title}>Popular AI API</div>
+                <div className={styles.rightTitle}>All</div>
                 <img src={expandSVG} />
-
               </div>
-              <Row grid={[20, 20]}>
-              <h1>We are reworking. Stay tuned!</h1>
-
-                {console.log(scripts)}
-                {scripts.map((script, idx) => (
-                  <Col span={8} key={idx}>
-                    <Card name={script.name} description={script.description} tryIt={this.tryIt} />
-                  </Col>
-                ))}
-              </Row>
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(0, 3).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(3, 6).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(6, 9).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
+              <Pagination
+                total={this.state.numModels}
+                current={this.state.currentPage}
+                pageSize={9}
+                showSizeChanger={false}
+                onChange={(page, pageSize) => this.setState({ currentPage: page })} />
             </div>
           </div>
         </div>
