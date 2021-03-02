@@ -108,10 +108,10 @@ class Market extends React.Component {
       models: [],
       numModels: 0,
       currentPage: 1,
-      searchedWord: "",
-      searchedCategories: [],
       loading: true,
-      searchType: 1
+      searchTitle: "",
+      filterContent: "",
+      arrCategories: []
     };
 
     this.form = React.createRef();
@@ -129,7 +129,7 @@ class Market extends React.Component {
       },
     });
     this.getMetadata();
-    this.getModels("keywords");
+    this.searchByTitle("");
   }
 
   getMetadata = async () => {
@@ -141,13 +141,10 @@ class Market extends React.Component {
       });
   };
 
-  getModels = async () => {
-    let result;
-    if (this.state.searchType === 1)   // keywords
-      result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${this.state.searchedWord}&limit=9&page=${this.state.currentPage}`);
-    else    // categories
-      result = await Axios.get(`https://api.marketplace.orai.io/v1/models?category=${this.state.searchedCategories.join(",")}&limit=9&page=${this.state.currentPage}`);
+  searchByTitle = async (content) => {
+    this.setState({ searchTitle: content });
     let arr = [];
+    let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${content}&limit=9&page=${this.state.currentPage}`);
     if (result.data.status === 1 && "data" in result.data)
       result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
     this.setState({
@@ -157,18 +154,36 @@ class Market extends React.Component {
     });
   };
 
-  search = (content, type) => {
-    if (type === 1)
-      this.setState({ searchType: 1, searchedWord: content }, () => this.getModels());
-    else {
-      if (content.length === 0)
-        this.setState({ searchType: 2, searchedCategories: [] }, () => this.getModels());
-      else
-        this.setState({
-          searchType: 2,
-          searchedCategories: [...this.state.searchedCategories, ...content]
-        }, () => this.getModels());
+  filterTag = async (tag) => {
+    this.setState({ filterContent: tag });
+    if (this.state.filter.includes(tag)) {
+      let arr = [];
+      let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${tag}&limit=9&page=${this.state.currentPage}`);
+      if (result.data.status === 1 && "data" in result.data)
+        result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
+      this.setState({
+        models: arr,
+        numModels: result.data.data.totalDocs,
+        loading: false
+      });
     }
+  };
+
+  filterCategory = (category) => {
+    this.setState({
+      arrCategories: [...this.state.arrCategories, ...category]
+    }, async () => {
+      this.setState({ filterContent: this.state.arrCategories.join(",") });
+      let arr = [];
+      let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?category=${this.state.arrCategories.join(",")}&limit=9&page=${this.state.currentPage}`);
+      if (result.data.status === 1 && "data" in result.data)
+        result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
+      this.setState({
+        models: arr,
+        numModels: result.data.data.totalDocs,
+        loading: false
+      });
+    });
   };
 
   tryIt = (name) => {
@@ -409,15 +424,16 @@ class Market extends React.Component {
               className={styles.input}
               placeholder="Search your AI modal"
               suffix={<img src={searchSVG} />}
-              value={this.state.searchedWord}
-              onChange={e => this.search(e.target.value, 1)} />
+              value={this.state.searchTitle}
+              onChange={e => this.searchByTitle(e.target.value)} />
             <div className={styles.hr} />
             <div className={styles.leftSubtitle}>Filter</div>
             <Input
               placeholder="Find the area you need"
               className={styles.input}
-              suffix={<img src={searchSVG} />}
-              value={this.state.searchType === 1 ? this.state.searchedWord : this.state.searchedCategories.join(",")} />
+              value={this.state.filterContent}
+              onChange={e => this.filterTag(e.target.value)}
+              suffix={<img src={searchSVG} />} />
             <Skeleton
               paragraph={{ rows: 5 }}
               active
@@ -427,7 +443,7 @@ class Market extends React.Component {
                   closable
                   key={index}
                   className={styles.tag}
-                  onClick={() => this.search(tag, 1)}>
+                  onClick={() => this.filterTag(tag)}>
                   {tag}
                 </Tag>
               )}
@@ -442,7 +458,7 @@ class Market extends React.Component {
                 <div
                   className={styles.category}
                   key={index}
-                  onClick={() => this.search([category], 2)}>
+                  onClick={() => this.filterCategory([category])}>
                   <img src={categoriesSVG} />
                   <div className={styles.content}>{category}</div>
                 </div>
