@@ -108,8 +108,10 @@ class Market extends React.Component {
       models: [],
       numModels: 0,
       currentPage: 1,
-      searchedWord: "",
-      loading: true
+      loading: true,
+      searchTitle: "",
+      filterContent: "",
+      arrCategories: []
     };
 
     this.form = React.createRef();
@@ -127,11 +129,7 @@ class Market extends React.Component {
       },
     });
     this.getMetadata();
-    this.getModels();
-  }
-
-  componentDidUpdate() {
-    this.getModels();
+    this.searchByTitle("");
   }
 
   getMetadata = async () => {
@@ -143,15 +141,48 @@ class Market extends React.Component {
       });
   };
 
-  getModels = async () => {
-    let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${this.state.searchedWord}&limit=9&page=${this.state.currentPage}`);
+  searchByTitle = async (content) => {
+    this.setState({ searchTitle: content });
     let arr = [];
+    let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${content}&limit=9&page=${this.state.currentPage}`);
     if (result.data.status === 1 && "data" in result.data)
       result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
     this.setState({
       models: arr,
       numModels: result.data.data.totalDocs,
       loading: false
+    });
+  };
+
+  filterTag = async (tag) => {
+    this.setState({ filterContent: tag });
+    if (this.state.filter.includes(tag)) {
+      let arr = [];
+      let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${tag}&limit=9&page=${this.state.currentPage}`);
+      if (result.data.status === 1 && "data" in result.data)
+        result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
+      this.setState({
+        models: arr,
+        numModels: result.data.data.totalDocs,
+        loading: false
+      });
+    }
+  };
+
+  filterCategory = (category) => {
+    this.setState({
+      arrCategories: [...this.state.arrCategories, ...category]
+    }, async () => {
+      this.setState({ filterContent: this.state.arrCategories.join(",") });
+      let arr = [];
+      let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?category=${this.state.arrCategories.join(",")}&limit=9&page=${this.state.currentPage}`);
+      if (result.data.status === 1 && "data" in result.data)
+        result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
+      this.setState({
+        models: arr,
+        numModels: result.data.data.totalDocs,
+        loading: false
+      });
     });
   };
 
@@ -393,35 +424,46 @@ class Market extends React.Component {
               className={styles.input}
               placeholder="Search your AI modal"
               suffix={<img src={searchSVG} />}
-            />
+              value={this.state.searchTitle}
+              onChange={e => this.searchByTitle(e.target.value)} />
             <div className={styles.hr} />
             <div className={styles.leftSubtitle}>Filter</div>
             <Input
               placeholder="Find the area you need"
               className={styles.input}
-              value={this.state.searchedWord}
-              suffix={<img src={searchSVG} />}
-              onChange={e => this.setState({ searchedWord: e.target.value })} />
-            {this.state.filter.map((tag, index) =>
-              <Tag
-                closable
-                key={index}
-                className={styles.tag}
-                onClick={() => this.setState({ searchedWord: tag })}>
-                {tag}
-              </Tag>
-            )}
+              value={this.state.filterContent}
+              onChange={e => this.filterTag(e.target.value)}
+              suffix={<img src={searchSVG} />} />
+            <Skeleton
+              paragraph={{ rows: 5 }}
+              active
+              loading={this.state.loading}>
+              {this.state.filter.map((tag, index) =>
+                <Tag
+                  closable
+                  key={index}
+                  className={styles.tag}
+                  onClick={() => this.filterTag(tag)}>
+                  {tag}
+                </Tag>
+              )}
+            </Skeleton>
             <div className={styles.hr} />
             <div className={styles.leftSubtitle}>Categories</div>
-            {this.state.categories.map((category, index) =>
-              <div
-                className={styles.category}
-                key={index}
-                onClick={() => this.setState({ searchedWord: category })}>
-                <img src={categoriesSVG} />
-                <div className={styles.content}>{category}</div>
-              </div>
-            )}
+            <Skeleton
+              paragraph={{ rows: 5 }}
+              active
+              loading={this.state.loading}>
+              {this.state.categories.map((category, index) =>
+                <div
+                  className={styles.category}
+                  key={index}
+                  onClick={() => this.filterCategory([category])}>
+                  <img src={categoriesSVG} />
+                  <div className={styles.content}>{category}</div>
+                </div>
+              )}
+            </Skeleton>
           </div>
           <div className={styles.content}>
             <div className={styles.block}>
@@ -429,42 +471,46 @@ class Market extends React.Component {
                 <div className={styles.rightTitle}>Hot pick today</div>
                 <img src={expandSVG} />
               </div>
-              <Skeleton
-                paragraph={{ rows: 5 }}
-                active
-                loading={this.state.loading}>
+              {this.state.loading &&
                 <Space style={{ width: "100%" }}>
-                  {this.state.models.slice(0, 3).map((model, index) =>
-                    <Card key={index} name={model.title} description={model.description} />
-                  )}
+                  <Skeleton.Button className={styles.cardSkeleton} />
+                  <Skeleton.Button className={styles.cardSkeleton} />
+                  <Skeleton.Button className={styles.cardSkeleton} />
                 </Space>
-              </Skeleton>
+              }
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(0, 3).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
             </div>
             <div className={styles.block}>
               <div className={styles.header}>
                 <div className={styles.rightTitle}>All</div>
                 <img src={expandSVG} />
               </div>
-              <Skeleton
-                paragraph={{ rows: 5 }}
-                active
-                loading={this.state.loading}>
+              {this.state.loading &&
                 <Space style={{ width: "100%" }}>
-                  {this.state.models.slice(0, 3).map((model, index) =>
-                    <Card key={index} name={model.title} description={model.description} />
-                  )}
+                  <Skeleton.Button className={styles.cardSkeleton} />
+                  <Skeleton.Button className={styles.cardSkeleton} />
+                  <Skeleton.Button className={styles.cardSkeleton} />
                 </Space>
-                <Space style={{ width: "100%" }}>
-                  {this.state.models.slice(3, 6).map((model, index) =>
-                    <Card key={index} name={model.title} description={model.description} />
-                  )}
-                </Space>
-                <Space style={{ width: "100%" }}>
-                  {this.state.models.slice(6, 9).map((model, index) =>
-                    <Card key={index} name={model.title} description={model.description} />
-                  )}
-                </Space>
-              </Skeleton>
+              }
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(0, 3).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(3, 6).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(6, 9).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
               <Pagination
                 total={this.state.numModels}
                 current={this.state.currentPage}
