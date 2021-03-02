@@ -109,7 +109,9 @@ class Market extends React.Component {
       numModels: 0,
       currentPage: 1,
       searchedWord: "",
-      loading: true
+      searchedCategories: [],
+      loading: true,
+      searchType: 1
     };
 
     this.form = React.createRef();
@@ -127,11 +129,7 @@ class Market extends React.Component {
       },
     });
     this.getMetadata();
-    this.getModels();
-  }
-
-  componentDidUpdate() {
-    this.getModels();
+    this.getModels("keywords");
   }
 
   getMetadata = async () => {
@@ -144,7 +142,11 @@ class Market extends React.Component {
   };
 
   getModels = async () => {
-    let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${this.state.searchedWord}&limit=9&page=${this.state.currentPage}`);
+    let result;
+    if (this.state.searchType === 1)   // keywords
+      result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${this.state.searchedWord}&limit=9&page=${this.state.currentPage}`);
+    else    // categories
+      result = await Axios.get(`https://api.marketplace.orai.io/v1/models?category=${this.state.searchedCategories.join(",")}&limit=9&page=${this.state.currentPage}`);
     let arr = [];
     if (result.data.status === 1 && "data" in result.data)
       result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
@@ -153,6 +155,20 @@ class Market extends React.Component {
       numModels: result.data.data.totalDocs,
       loading: false
     });
+  };
+
+  search = (content, type) => {
+    if (type === 1)
+      this.setState({ searchType: 1, searchedWord: content }, () => this.getModels());
+    else {
+      if (content.length === 0)
+        this.setState({ searchType: 2, searchedCategories: [] }, () => this.getModels());
+      else
+        this.setState({
+          searchType: 2,
+          searchedCategories: [...this.state.searchedCategories, ...content]
+        }, () => this.getModels());
+    }
   };
 
   tryIt = (name) => {
@@ -393,35 +409,45 @@ class Market extends React.Component {
               className={styles.input}
               placeholder="Search your AI modal"
               suffix={<img src={searchSVG} />}
-            />
+              value={this.state.searchedWord}
+              onChange={e => this.search(e.target.value, 1)} />
             <div className={styles.hr} />
             <div className={styles.leftSubtitle}>Filter</div>
             <Input
               placeholder="Find the area you need"
               className={styles.input}
-              value={this.state.searchedWord}
               suffix={<img src={searchSVG} />}
-              onChange={e => this.setState({ searchedWord: e.target.value })} />
-            {this.state.filter.map((tag, index) =>
-              <Tag
-                closable
-                key={index}
-                className={styles.tag}
-                onClick={() => this.setState({ searchedWord: tag })}>
-                {tag}
-              </Tag>
-            )}
+              value={this.state.searchType === 1 ? this.state.searchedWord : this.state.searchedCategories.join(",")} />
+            <Skeleton
+              paragraph={{ rows: 5 }}
+              active
+              loading={this.state.loading}>
+              {this.state.filter.map((tag, index) =>
+                <Tag
+                  closable
+                  key={index}
+                  className={styles.tag}
+                  onClick={() => this.search(tag, 1)}>
+                  {tag}
+                </Tag>
+              )}
+            </Skeleton>
             <div className={styles.hr} />
             <div className={styles.leftSubtitle}>Categories</div>
-            {this.state.categories.map((category, index) =>
-              <div
-                className={styles.category}
-                key={index}
-                onClick={() => this.setState({ searchedWord: category })}>
-                <img src={categoriesSVG} />
-                <div className={styles.content}>{category}</div>
-              </div>
-            )}
+            <Skeleton
+              paragraph={{ rows: 5 }}
+              active
+              loading={this.state.loading}>
+              {this.state.categories.map((category, index) =>
+                <div
+                  className={styles.category}
+                  key={index}
+                  onClick={() => this.search([category], 2)}>
+                  <img src={categoriesSVG} />
+                  <div className={styles.content}>{category}</div>
+                </div>
+              )}
+            </Skeleton>
           </div>
           <div className={styles.content}>
             <div className={styles.block}>
@@ -429,42 +455,46 @@ class Market extends React.Component {
                 <div className={styles.rightTitle}>Hot pick today</div>
                 <img src={expandSVG} />
               </div>
-              <Skeleton
-                paragraph={{ rows: 5 }}
-                active
-                loading={this.state.loading}>
+              {this.state.loading &&
                 <Space style={{ width: "100%" }}>
-                  {this.state.models.slice(0, 3).map((model, index) =>
-                    <Card key={index} name={model.title} description={model.description} />
-                  )}
+                  <Skeleton.Button className={styles.cardSkeleton} />
+                  <Skeleton.Button className={styles.cardSkeleton} />
+                  <Skeleton.Button className={styles.cardSkeleton} />
                 </Space>
-              </Skeleton>
+              }
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(0, 3).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
             </div>
             <div className={styles.block}>
               <div className={styles.header}>
                 <div className={styles.rightTitle}>All</div>
                 <img src={expandSVG} />
               </div>
-              <Skeleton
-                paragraph={{ rows: 5 }}
-                active
-                loading={this.state.loading}>
+              {this.state.loading &&
                 <Space style={{ width: "100%" }}>
-                  {this.state.models.slice(0, 3).map((model, index) =>
-                    <Card key={index} name={model.title} description={model.description} />
-                  )}
+                  <Skeleton.Button className={styles.cardSkeleton} />
+                  <Skeleton.Button className={styles.cardSkeleton} />
+                  <Skeleton.Button className={styles.cardSkeleton} />
                 </Space>
-                <Space style={{ width: "100%" }}>
-                  {this.state.models.slice(3, 6).map((model, index) =>
-                    <Card key={index} name={model.title} description={model.description} />
-                  )}
-                </Space>
-                <Space style={{ width: "100%" }}>
-                  {this.state.models.slice(6, 9).map((model, index) =>
-                    <Card key={index} name={model.title} description={model.description} />
-                  )}
-                </Space>
-              </Skeleton>
+              }
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(0, 3).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(3, 6).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
+              <Space style={{ width: "100%" }}>
+                {this.state.models.slice(6, 9).map((model, index) =>
+                  <Card key={index} name={model.title} description={model.description} />
+                )}
+              </Space>
               <Pagination
                 total={this.state.numModels}
                 current={this.state.currentPage}
