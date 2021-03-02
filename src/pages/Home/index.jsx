@@ -16,6 +16,7 @@ import {
   Tag,
   Space,
   Pagination,
+  Skeleton,
 } from 'antd';
 import { CopyOutlined, InfoCircleTwoTone } from '@ant-design/icons';
 import Card from './components/Card';
@@ -107,7 +108,8 @@ class Market extends React.Component {
       models: [],
       numModels: 0,
       currentPage: 1,
-      searchedWord: ""
+      searchedWord: "",
+      loading: true
     };
 
     this.form = React.createRef();
@@ -146,7 +148,11 @@ class Market extends React.Component {
     let arr = [];
     if (result.data.status === 1 && "data" in result.data)
       result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
-    this.setState({ models: arr, numModels: result.data.data.totalDocs });
+    this.setState({
+      models: arr,
+      numModels: result.data.data.totalDocs,
+      loading: false
+    });
   };
 
   tryIt = (name) => {
@@ -393,17 +399,27 @@ class Market extends React.Component {
             <Input
               placeholder="Find the area you need"
               className={styles.input}
+              value={this.state.searchedWord}
               suffix={<img src={searchSVG} />}
-              onPressEnter={e => this.setState({ searchedWord: e.target.value })} />
+              onChange={e => this.setState({ searchedWord: e.target.value })} />
             {this.state.filter.map((tag, index) =>
-              <Tag closable key={index} className={styles.tag}>{tag}</Tag>
+              <Tag
+                closable
+                key={index}
+                className={styles.tag}
+                onClick={() => this.setState({ searchedWord: tag })}>
+                {tag}
+              </Tag>
             )}
             <div className={styles.hr} />
             <div className={styles.leftSubtitle}>Categories</div>
             {this.state.categories.map((category, index) =>
-              <div className={styles.category} key={index}>
+              <div
+                className={styles.category}
+                key={index}
+                onClick={() => this.setState({ searchedWord: category })}>
                 <img src={categoriesSVG} />
-                <div className={styles.content}>Type AI {index} -- {category}</div>
+                <div className={styles.content}>{category}</div>
               </div>
             )}
           </div>
@@ -413,32 +429,42 @@ class Market extends React.Component {
                 <div className={styles.rightTitle}>Hot pick today</div>
                 <img src={expandSVG} />
               </div>
-              <Space style={{ width: "100%" }}>
-                {this.state.models.slice(0, 3).map((model, index) =>
-                  <Card key={index} name={model.title} description={model.description} />
-                )}
-              </Space>
+              <Skeleton
+                paragraph={{ rows: 5 }}
+                active
+                loading={this.state.loading}>
+                <Space style={{ width: "100%" }}>
+                  {this.state.models.slice(0, 3).map((model, index) =>
+                    <Card key={index} name={model.title} description={model.description} />
+                  )}
+                </Space>
+              </Skeleton>
             </div>
             <div className={styles.block}>
               <div className={styles.header}>
                 <div className={styles.rightTitle}>All</div>
                 <img src={expandSVG} />
               </div>
-              <Space style={{ width: "100%" }}>
-                {this.state.models.slice(0, 3).map((model, index) =>
-                  <Card key={index} name={model.title} description={model.description} />
-                )}
-              </Space>
-              <Space style={{ width: "100%" }}>
-                {this.state.models.slice(3, 6).map((model, index) =>
-                  <Card key={index} name={model.title} description={model.description} />
-                )}
-              </Space>
-              <Space style={{ width: "100%" }}>
-                {this.state.models.slice(6, 9).map((model, index) =>
-                  <Card key={index} name={model.title} description={model.description} />
-                )}
-              </Space>
+              <Skeleton
+                paragraph={{ rows: 5 }}
+                active
+                loading={this.state.loading}>
+                <Space style={{ width: "100%" }}>
+                  {this.state.models.slice(0, 3).map((model, index) =>
+                    <Card key={index} name={model.title} description={model.description} />
+                  )}
+                </Space>
+                <Space style={{ width: "100%" }}>
+                  {this.state.models.slice(3, 6).map((model, index) =>
+                    <Card key={index} name={model.title} description={model.description} />
+                  )}
+                </Space>
+                <Space style={{ width: "100%" }}>
+                  {this.state.models.slice(6, 9).map((model, index) =>
+                    <Card key={index} name={model.title} description={model.description} />
+                  )}
+                </Space>
+              </Skeleton>
               <Pagination
                 total={this.state.numModels}
                 current={this.state.currentPage}
