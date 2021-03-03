@@ -466,7 +466,7 @@ class Market extends React.Component {
               {this.state.categories.map((category, index) =>
                 <div
                   className={styles.category}
-                  style={{ backgroundColor: this.state.chosenCategories.includes(category) ? "#E3F5FF" : "#f5f5f5" }}
+                  style={{ backgroundColor: this.state.chosenCategories.includes(category) ? "#FF33E9" : "#f5f5f5" }}
                   key={index}
                   onClick={() => this.filterCategory([category])}>
                   <img src={categoriesSVG} />
@@ -513,7 +513,7 @@ class Market extends React.Component {
               {this.state.models.length === 0 && !this.state.loading ?
                 <Empty description={false} className={styles.empty} />
                 :
-                <div>
+                <div style={{ width: "100%" }}>
                   <Space style={{ width: "100%" }}>
                     {this.state.models.slice(0, 3).map((model, index) =>
                       <Card key={index} name={model.title} description={model.description} />
