@@ -18,6 +18,7 @@ import {
   Pagination,
   Skeleton,
   AutoComplete,
+  Empty,
 } from 'antd';
 import { CopyOutlined, InfoCircleTwoTone } from '@ant-design/icons';
 import Card from './components/Card';
@@ -432,7 +433,7 @@ class Market extends React.Component {
               value={this.state.searchTitle}
               onChange={e => this.searchByTitle(e.target.value)} />
             <div className={styles.hr} />
-            <div className={styles.leftSubtitle}>Filter</div>
+            <div className={styles.leftSubtitle}>Keyword</div>
             <AutoComplete
               style={{ display: "flex", alignSelf: "stretch" }}
               value={this.state.filterContent}
@@ -487,11 +488,15 @@ class Market extends React.Component {
                   <Skeleton.Button className={styles.cardSkeleton} />
                 </Space>
               }
-              <Space style={{ width: "100%" }}>
-                {this.state.models.slice(0, 3).map((model, index) =>
-                  <Card key={index} name={model.title} description={model.description} />
-                )}
-              </Space>
+              {this.state.models.length === 0 && !this.state.loading ?
+                <Empty description={false} className={styles.empty} />
+                :
+                <Space style={{ width: "100%" }}>
+                  {this.state.models.slice(0, 3).map((model, index) =>
+                    <Card key={index} name={model.title} description={model.description} />
+                  )}
+                </Space>
+              }
             </div>
             <div className={styles.block}>
               <div className={styles.header}>
@@ -505,21 +510,27 @@ class Market extends React.Component {
                   <Skeleton.Button className={styles.cardSkeleton} />
                 </Space>
               }
-              <Space style={{ width: "100%" }}>
-                {this.state.models.slice(0, 3).map((model, index) =>
-                  <Card key={index} name={model.title} description={model.description} />
-                )}
-              </Space>
-              <Space style={{ width: "100%" }}>
-                {this.state.models.slice(3, 6).map((model, index) =>
-                  <Card key={index} name={model.title} description={model.description} />
-                )}
-              </Space>
-              <Space style={{ width: "100%" }}>
-                {this.state.models.slice(6, 9).map((model, index) =>
-                  <Card key={index} name={model.title} description={model.description} />
-                )}
-              </Space>
+              {this.state.models.length === 0 && !this.state.loading ?
+                <Empty description={false} className={styles.empty} />
+                :
+                <div>
+                  <Space style={{ width: "100%" }}>
+                    {this.state.models.slice(0, 3).map((model, index) =>
+                      <Card key={index} name={model.title} description={model.description} />
+                    )}
+                  </Space>
+                  <Space style={{ width: "100%" }}>
+                    {this.state.models.slice(3, 6).map((model, index) =>
+                      <Card key={index} name={model.title} description={model.description} />
+                    )}
+                  </Space>
+                  <Space style={{ width: "100%" }}>
+                    {this.state.models.slice(6, 9).map((model, index) =>
+                      <Card key={index} name={model.title} description={model.description} />
+                    )}
+                  </Space>
+                </div>
+              }
               <Pagination
                 total={this.state.numModels}
                 current={this.state.currentPage}
