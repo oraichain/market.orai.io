@@ -17,6 +17,7 @@ import {
   Space,
   Pagination,
   Skeleton,
+  AutoComplete,
 } from 'antd';
 import { CopyOutlined, InfoCircleTwoTone } from '@ant-design/icons';
 import Card from './components/Card';
@@ -111,7 +112,7 @@ class Market extends React.Component {
       loading: true,
       searchTitle: "",
       filterContent: "",
-      arrCategories: []
+      chosenCategories: []
     };
 
     this.form = React.createRef();
@@ -171,11 +172,16 @@ class Market extends React.Component {
 
   filterCategory = (category) => {
     this.setState({
-      arrCategories: [...this.state.arrCategories, ...category]
+      chosenCategories: this.state.chosenCategories.includes(category[0]) ?
+        this.state.chosenCategories.filter(x => x !== category[0])
+        :
+        [...this.state.chosenCategories, ...category]
     }, async () => {
-      this.setState({ filterContent: this.state.arrCategories.join(",") });
+      var refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + `?keywords=${this.state.chosenCategories.join(",")}`;
+      window.history.pushState({ path: refresh }, '', refresh);
+      this.setState({ filterContent: this.state.chosenCategories.join(",") });
       let arr = [];
-      let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?category=${this.state.arrCategories.join(",")}&limit=9&page=${this.state.currentPage}`);
+      let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?category=${this.state.chosenCategories.join(",")}&limit=9&page=${this.state.currentPage}`);
       if (result.data.status === 1 && "data" in result.data)
         result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
       this.setState({
@@ -421,24 +427,26 @@ class Market extends React.Component {
           <div className={styles.menu}>
             <div className={styles.leftTitle}>Marketplace</div>
             <Input
-              className={styles.input}
               placeholder="Search your AI modal"
               suffix={<img src={searchSVG} />}
               value={this.state.searchTitle}
               onChange={e => this.searchByTitle(e.target.value)} />
             <div className={styles.hr} />
             <div className={styles.leftSubtitle}>Filter</div>
-            <Input
-              placeholder="Find the area you need"
-              className={styles.input}
+            <AutoComplete
+              style={{ display: "flex", alignSelf: "stretch" }}
               value={this.state.filterContent}
-              onChange={e => this.filterTag(e.target.value)}
-              suffix={<img src={searchSVG} />} />
+              onChange={value => this.setState({ filterContent: value })}
+              suffixIcon={<img src={searchSVG} />}
+              onSelect={(value, option) => this.filterTag(value)}
+              options={this.state.filter.map(tag => { return { value: tag }; })}
+              placeholder="Find the area you need"
+              filterOption={(inputValue, option) => option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1} />
             <Skeleton
               paragraph={{ rows: 5 }}
               active
               loading={this.state.loading}>
-              {this.state.filter.map((tag, index) =>
+              {this.state.filter.slice(0, 10).map((tag, index) =>
                 <Tag
                   closable
                   key={index}
@@ -457,6 +465,7 @@ class Market extends React.Component {
               {this.state.categories.map((category, index) =>
                 <div
                   className={styles.category}
+                  style={{ backgroundColor: this.state.chosenCategories.includes(category) ? "#E3F5FF" : "#f5f5f5" }}
                   key={index}
                   onClick={() => this.filterCategory([category])}>
                   <img src={categoriesSVG} />
