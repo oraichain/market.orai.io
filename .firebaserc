@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "oraichain-mainnet"
+  },
+  "targets": {
+    "oraichain-mainnet": {
+      "hosting": {
+        "orai-market": [
+          "orai-market"
+        ]
+      }
+    }
+  }
+}

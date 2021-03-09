@@ -4,12 +4,11 @@ import { Row, Col, Menu, Dropdown } from 'antd';
 import copy from 'copy-to-clipboard';
 import { CaretDownOutlined } from '@ant-design/icons';
 
-import Keystation from '@/utils/Keystation';
 import { ReactComponent as CopyIcon } from '@/assets/copy.svg';
 import { ReactComponent as ShareIcon } from '@/assets/share.svg';
 
 import PhoneNav from './PhoneNav';
-import { WALLET_API_URL } from '../../config/constant';
+import { WALLET_API_URL, URL } from '../../config/constant';
 
 const products = (
   <Menu>
@@ -52,11 +51,9 @@ const about = (
 );
 
 const handleClickConnectWallet = () => {
-  const myKeystation = new Keystation({
-    client: WALLET_API_URL,
-    lcd: 'https://lcd-cosmos-free.cosmostation.io',
-    path: '44/118/0/0/0',
+  const myKeystation = new window.Keystation({
     keystationUrl: WALLET_API_URL,
+    lcd: URL,
   });
 
   const prefix = 'cosmos';
@@ -76,7 +73,7 @@ class Header extends React.Component {
     };
   }
 
-  componentDidMount() { 
+  componentDidMount() {
     this.setState({
       walletAddress: window.localStorage.getItem('wallet_address'),
     });
@@ -186,7 +183,7 @@ class Header extends React.Component {
             Whitepaper
           </a>
         </Menu.Item>
-        {/* {this.renderWallet()} */}
+        {this.renderWallet()}
       </Menu>
     );
   };

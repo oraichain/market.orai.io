@@ -34,7 +34,7 @@ functions/*
 
 # screenshot
 screenshot
-.firebase
+.firebase/
 .eslintcache
 
 build

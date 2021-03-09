@@ -111,9 +111,9 @@ class Market extends React.Component {
       numModels: 0,
       currentPage: 1,
       loading: true,
-      searchTitle: "",
-      filterContent: "",
-      chosenCategories: []
+      searchTitle: '',
+      filterContent: '',
+      chosenCategories: [],
     };
 
     this.form = React.createRef();
@@ -131,28 +131,32 @@ class Market extends React.Component {
       },
     });
     this.getMetadata();
-    this.searchByTitle("");
+    this.searchByTitle('');
   }
 
   getMetadata = async () => {
-    let result = await Axios.get("https://api.marketplace.orai.io/v1/metadata");
-    if (result.data.status === 1 && "data" in result.data)
+    let result = await Axios.get('https://api.marketplace.orai.io/v1/metadata');
+    if (result.data.status === 1 && 'data' in result.data)
       this.setState({
         filter: result.data.data.keywords,
-        categories: result.data.data.categories
+        categories: result.data.data.categories,
       });
   };
 
   searchByTitle = async (content) => {
     this.setState({ searchTitle: content });
     let arr = [];
-    let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${content}&limit=9&page=${this.state.currentPage}`);
-    if (result.data.status === 1 && "data" in result.data)
-      result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
+    let result = await Axios.get(
+      `https://api.marketplace.orai.io/v1/models?keywords=${content}&limit=9&page=${this.state.currentPage}`,
+    );
+    if (result.data.status === 1 && 'data' in result.data)
+      result.data.data.docs.forEach((model) =>
+        arr.push({ title: model.task, description: model.description }),
+      );
     this.setState({
       models: arr,
       numModels: result.data.data.totalDocs,
-      loading: false
+      loading: false,
     });
   };
 
@@ -160,37 +164,54 @@ class Market extends React.Component {
     this.setState({ filterContent: tag });
     if (this.state.filter.includes(tag)) {
       let arr = [];
-      let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?keywords=${tag}&limit=9&page=${this.state.currentPage}`);
-      if (result.data.status === 1 && "data" in result.data)
-        result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
+      let result = await Axios.get(
+        `https://api.marketplace.orai.io/v1/models?keywords=${tag}&limit=9&page=${this.state.currentPage}`,
+      );
+      if (result.data.status === 1 && 'data' in result.data)
+        result.data.data.docs.forEach((model) =>
+          arr.push({ title: model.task, description: model.description }),
+        );
       this.setState({
         models: arr,
         numModels: result.data.data.totalDocs,
-        loading: false
+        loading: false,
       });
     }
   };
 
   filterCategory = (category) => {
-    this.setState({
-      chosenCategories: this.state.chosenCategories.includes(category[0]) ?
-        this.state.chosenCategories.filter(x => x !== category[0])
-        :
-        [...this.state.chosenCategories, ...category]
-    }, async () => {
-      var refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + `?keywords=${this.state.chosenCategories.join(",")}`;
-      window.history.pushState({ path: refresh }, '', refresh);
-      this.setState({ filterContent: this.state.chosenCategories.join(",") });
-      let arr = [];
-      let result = await Axios.get(`https://api.marketplace.orai.io/v1/models?category=${this.state.chosenCategories.join(",")}&limit=9&page=${this.state.currentPage}`);
-      if (result.data.status === 1 && "data" in result.data)
-        result.data.data.docs.forEach(model => arr.push({ title: model.task, description: model.description }));
-      this.setState({
-        models: arr,
-        numModels: result.data.data.totalDocs,
-        loading: false
-      });
-    });
+    this.setState(
+      {
+        chosenCategories: this.state.chosenCategories.includes(category[0])
+          ? this.state.chosenCategories.filter((x) => x !== category[0])
+          : [...this.state.chosenCategories, ...category],
+      },
+      async () => {
+        var refresh =
+          window.location.protocol +
+          '//' +
+          window.location.host +
+          window.location.pathname +
+          `?keywords=${this.state.chosenCategories.join(',')}`;
+        window.history.pushState({ path: refresh }, '', refresh);
+        this.setState({ filterContent: this.state.chosenCategories.join(',') });
+        let arr = [];
+        let result = await Axios.get(
+          `https://api.marketplace.orai.io/v1/models?category=${this.state.chosenCategories.join(
+            ',',
+          )}&limit=9&page=${this.state.currentPage}`,
+        );
+        if (result.data.status === 1 && 'data' in result.data)
+          result.data.data.docs.forEach((model) =>
+            arr.push({ title: model.task, description: model.description }),
+          );
+        this.setState({
+          models: arr,
+          numModels: result.data.data.totalDocs,
+          loading: false,
+        });
+      },
+    );
   };
 
   tryIt = (name) => {
@@ -431,48 +452,54 @@ class Market extends React.Component {
               placeholder="Search your AI modal"
               suffix={<img src={searchSVG} />}
               value={this.state.searchTitle}
-              onChange={e => this.searchByTitle(e.target.value)} />
+              onChange={(e) => this.searchByTitle(e.target.value)}
+            />
             <div className={styles.hr} />
             <div className={styles.leftSubtitle}>Keyword</div>
             <AutoComplete
-              style={{ display: "flex", alignSelf: "stretch" }}
+              style={{ display: 'flex', alignSelf: 'stretch' }}
               value={this.state.filterContent}
-              onChange={value => this.setState({ filterContent: value })}
+              onChange={(value) => this.setState({ filterContent: value })}
               suffixIcon={<img src={searchSVG} />}
               onSelect={(value, option) => this.filterTag(value)}
-              options={this.state.filter.map(tag => { return { value: tag }; })}
+              options={this.state.filter.map((tag) => {
+                return { value: tag };
+              })}
               placeholder="Find the area you need"
-              filterOption={(inputValue, option) => option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1} />
-            <Skeleton
-              paragraph={{ rows: 5 }}
-              active
-              loading={this.state.loading}>
-              {this.state.filter.slice(0, 10).map((tag, index) =>
+              filterOption={(inputValue, option) =>
+                option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+              }
+            />
+            <Skeleton paragraph={{ rows: 5 }} active loading={this.state.loading}>
+              {this.state.filter.slice(0, 10).map((tag, index) => (
                 <Tag
                   closable
                   key={index}
                   className={styles.tag}
-                  onClick={() => this.filterTag(tag)}>
+                  onClick={() => this.filterTag(tag)}
+                >
                   {tag}
                 </Tag>
-              )}
+              ))}
             </Skeleton>
             <div className={styles.hr} />
             <div className={styles.leftSubtitle}>Categories</div>
-            <Skeleton
-              paragraph={{ rows: 5 }}
-              active
-              loading={this.state.loading}>
-              {this.state.categories.map((category, index) =>
+            <Skeleton paragraph={{ rows: 5 }} active loading={this.state.loading}>
+              {this.state.categories.map((category, index) => (
                 <div
                   className={styles.category}
-                  style={{ backgroundColor: this.state.chosenCategories.includes(category) ? "#FF33E9" : "#f5f5f5" }}
+                  style={{
+                    backgroundColor: this.state.chosenCategories.includes(category)
+                      ? '#FF33E9'
+                      : '#f5f5f5',
+                  }}
                   key={index}
-                  onClick={() => this.filterCategory([category])}>
+                  onClick={() => this.filterCategory([category])}
+                >
                   <img src={categoriesSVG} />
                   <div className={styles.content}>{category}</div>
                 </div>
-              )}
+              ))}
             </Skeleton>
           </div>
           <div className={styles.content}>
@@ -481,62 +508,63 @@ class Market extends React.Component {
                 <div className={styles.rightTitle}>Hot pick today</div>
                 <img src={expandSVG} />
               </div>
-              {this.state.loading &&
-                <Space style={{ width: "100%" }}>
+              {this.state.loading && (
+                <Space style={{ width: '100%' }}>
                   <Skeleton.Button className={styles.cardSkeleton} />
                   <Skeleton.Button className={styles.cardSkeleton} />
                   <Skeleton.Button className={styles.cardSkeleton} />
                 </Space>
-              }
-              {this.state.models.length === 0 && !this.state.loading ?
+              )}
+              {this.state.models.length === 0 && !this.state.loading ? (
                 <Empty description={false} className={styles.empty} />
-                :
-                <Space style={{ width: "100%" }}>
-                  {this.state.models.slice(0, 3).map((model, index) =>
+              ) : (
+                <Space style={{ width: '100%' }}>
+                  {this.state.models.slice(0, 3).map((model, index) => (
                     <Card key={index} name={model.title} description={model.description} />
-                  )}
+                  ))}
                 </Space>
-              }
+              )}
             </div>
             <div className={styles.block}>
               <div className={styles.header}>
                 <div className={styles.rightTitle}>All</div>
                 <img src={expandSVG} />
               </div>
-              {this.state.loading &&
-                <Space style={{ width: "100%" }}>
+              {this.state.loading && (
+                <Space style={{ width: '100%' }}>
                   <Skeleton.Button className={styles.cardSkeleton} />
                   <Skeleton.Button className={styles.cardSkeleton} />
                   <Skeleton.Button className={styles.cardSkeleton} />
                 </Space>
-              }
-              {this.state.models.length === 0 && !this.state.loading ?
+              )}
+              {this.state.models.length === 0 && !this.state.loading ? (
                 <Empty description={false} className={styles.empty} />
-                :
-                <div style={{ width: "100%" }}>
-                  <Space style={{ width: "100%" }}>
-                    {this.state.models.slice(0, 3).map((model, index) =>
+              ) : (
+                <div style={{ width: '100%' }}>
+                  <Space style={{ width: '100%' }}>
+                    {this.state.models.slice(0, 3).map((model, index) => (
                       <Card key={index} name={model.title} description={model.description} />
-                    )}
+                    ))}
                   </Space>
-                  <Space style={{ width: "100%" }}>
-                    {this.state.models.slice(3, 6).map((model, index) =>
+                  <Space style={{ width: '100%' }}>
+                    {this.state.models.slice(3, 6).map((model, index) => (
                       <Card key={index} name={model.title} description={model.description} />
-                    )}
+                    ))}
                   </Space>
-                  <Space style={{ width: "100%" }}>
-                    {this.state.models.slice(6, 9).map((model, index) =>
+                  <Space style={{ width: '100%' }}>
+                    {this.state.models.slice(6, 9).map((model, index) => (
                       <Card key={index} name={model.title} description={model.description} />
-                    )}
+                    ))}
                   </Space>
                 </div>
-              }
+              )}
               <Pagination
                 total={this.state.numModels}
                 current={this.state.currentPage}
                 pageSize={9}
                 showSizeChanger={false}
-                onChange={(page, pageSize) => this.setState({ currentPage: page })} />
+                onChange={(page, pageSize) => this.setState({ currentPage: page })}
+              />
             </div>
           </div>
         </div>
@@ -1064,7 +1092,7 @@ class Market extends React.Component {
                 )}
               </Form>
             )}
-          </div> 
+          </div>
         </Modal> */}
       </div>
     );
