@@ -10,6 +10,11 @@ import { ReactComponent as ShareIcon } from '@/assets/share.svg';
 import PhoneNav from './PhoneNav';
 import { WALLET_API_URL, URL } from '../../config/constant';
 
+const keystation = new window.Keystation({
+  keystationUrl: WALLET_API_URL,
+  lcd: URL,
+});
+
 const products = (
   <Menu>
     <Menu.Item>
@@ -51,18 +56,17 @@ const about = (
 );
 
 const handleClickConnectWallet = () => {
-  const myKeystation = new window.Keystation({
-    keystationUrl: WALLET_API_URL,
-    lcd: URL,
+  // post message
+  keystation.send({
+    messages: [
+      {
+        type_url: '/cosmos.bank.v1beta1.MsgSend',
+        value:
+          'CitvcmFpMW5zZjR5NjMwdDcwZWZ3aGhhOXRlc3pmOXp6c20wdmdmYXltNTM2EitvcmFpMXU0ampuN2FkaDQ2Z210bmYyYTl0c2MyZzlubTQ4OWQ3bnVodjhuGggKBG9yYWkSAA==',
+      },
+    ],
+    memo: '',
   });
-
-  const prefix = 'cosmos';
-  const popup = myKeystation.openWindow('signin', prefix);
-  const popupTick = setInterval(function () {
-    if (popup.closed) {
-      clearInterval(popupTick);
-    }
-  }, 500);
 };
 
 class Header extends React.Component {
